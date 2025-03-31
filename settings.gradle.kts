@@ -19,4 +19,4 @@ listOf(
 
 rootProject.name = "system"
 
-includeSubs("system", ".", "file")
+includeSubs("system-file", "file", "core", "chooser", "manager")

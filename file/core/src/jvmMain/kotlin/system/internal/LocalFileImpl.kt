@@ -1,0 +1,5 @@
+package system.internal
+
+import system.LocalFile
+
+data class LocalFileImpl(val path: String) : LocalFile
