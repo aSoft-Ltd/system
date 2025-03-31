@@ -1,7 +1,6 @@
 package system
 
 import koncurrent.Later
-import koncurrent.toLater
 import system.internal.LocalFileImpl
 import system.permissions.VirtualFilePickerPermissionManager
 import java.io.File
@@ -14,8 +13,8 @@ class JavaFileChooser : FileChooser {
     override fun openFileChooser(
         extensions: List<String>,
         multiple: Boolean
-    ): Later<List<LocalFile>> {
-        val fileChooser = JFileChooser().apply {
+    ) = Later<List<LocalFile>> { resolve, _ ->
+        val chooser = JFileChooser().apply {
             isMultiSelectionEnabled = multiple
             fileSelectionMode = JFileChooser.FILES_ONLY
             fileFilter = object : FileFilter() {
@@ -23,24 +22,26 @@ class JavaFileChooser : FileChooser {
                 override fun getDescription(): String = if (extensions.contains("*")) "All Files" else extensions.joinToString(", ") { "*.$it" }
             }
         }
-        val result = fileChooser.showOpenDialog(null)
-        return if (result == JFileChooser.APPROVE_OPTION) {
-            val files = if (multiple) fileChooser.selectedFiles.toList() else listOf(fileChooser.selectedFile)
+        val result = chooser.showOpenDialog(null)
+        val response = if (result == JFileChooser.APPROVE_OPTION) {
+            val files = if (multiple) chooser.selectedFiles.toList() else listOf(chooser.selectedFile)
             files.map { LocalFileImpl(it.path) }
         } else {
             emptyList()
-        }.toLater()
+        }
+        resolve(response)
     }
 
-    override fun openDirChooser(): Later<LocalFile?> {
-        val fileChooser = JFileChooser().apply {
+    override fun openDirChooser() = Later<LocalFile?> { resolve, _ ->
+        val chooser = JFileChooser().apply {
             isMultiSelectionEnabled = false
             fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
         }
-        val result = fileChooser.showOpenDialog(null)
+        val result = chooser.showOpenDialog(null)
         if (result == JFileChooser.CANCEL_OPTION) {
-            return Later(null)
+            resolve(null)
+        } else {
+            resolve(chooser.selectedFile?.let { LocalFileImpl(it.path) })
         }
-        return Later(fileChooser.selectedFile?.let { LocalFileImpl(it.path) })
     }
 }
