@@ -1,3 +1,5 @@
 package system
 
-actual fun SystemFileReader(): FileReader = throw Throwable("Not yet implemented for native platforms")
+import system.internal.BrowserFileReader
+
+actual fun SystemFileReader(): FileReader = BrowserFileReader()
