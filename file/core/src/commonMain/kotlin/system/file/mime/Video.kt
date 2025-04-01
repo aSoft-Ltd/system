@@ -114,19 +114,4 @@ interface Video : Mime {
         override val text: String get() = "video/mpeg"
 
     }
-
-    data object Audio : Mime {
-        override val name: String get() = "Audio"
-        override val text: String get() = "audio/*"
-    }
-
-    data object Document : Mime {
-        override val name: String get() = "Document"
-        override val text: String get() = "application/*"
-    }
-
-    data object Pdf : Mime {
-        override val name: String get() = "PDF"
-        override val text: String get() = "application/pdf"
-    }
 }

@@ -1,22 +1,19 @@
 package system
 
 import koncurrent.Later
+import system.file.FilePicker
 import system.file.mime.All
 import system.file.mime.Mime
-import system.internal.LocalFileImpl
-import system.permissions.VirtualFilePickerPermissionManager
-import system.picker.files.FilePicker
+import system.file.toResponse
 import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileFilter
 
 class JavaFilePicker : FilePicker {
-    override val permission by lazy { VirtualFilePickerPermissionManager(Permission.Granted) }
-
-    override fun openFileChooser(
+    override fun openPicker(
         mimes: List<Mime>,
         multiple: Boolean
-    ) = Later<List<LocalFile>> { resolve, _ ->
+    ) = Later { resolve, _ ->
         val chooser = JFileChooser().apply {
             isMultiSelectionEnabled = multiple
             fileSelectionMode = JFileChooser.FILES_ONLY
@@ -34,11 +31,13 @@ class JavaFilePicker : FilePicker {
         }
 
         val result = chooser.showOpenDialog(null)
-        val response = if (result == JFileChooser.APPROVE_OPTION) {
-            val files = if (multiple) chooser.selectedFiles.toList() else listOf(chooser.selectedFile)
-            files.map { LocalFileImpl(it.path) }
-        } else {
-            emptyList()
+        val response = when (result) {
+            JFileChooser.APPROVE_OPTION -> {
+                val files = if (multiple) chooser.selectedFiles.toList() else listOf(chooser.selectedFile)
+                files.map { LocalFile(it.path) }.toResponse(multiple)
+            }
+
+            else -> PickerResponse.Cancelled
         }
         resolve(response)
     }

@@ -4,17 +4,14 @@ import koncurrent.Later
 import kotlinx.browser.window
 import org.w3c.dom.HTMLInputElement
 import org.w3c.files.FileList
+import system.file.FilePicker
 import system.file.mime.All
 import system.file.mime.Mime
+import system.file.toResponse
 import system.internal.LocalFileImpl
-import system.permissions.VirtualFilePickerPermissionManager
-import system.picker.files.FilePicker
 
 class BrowserFilePicker : FilePicker {
-
-    override val permission by lazy { VirtualFilePickerPermissionManager(Permission.Granted) }
-
-    override fun openFileChooser(mimes: List<Mime>, multiple: Boolean) = Later { resolve, _ ->
+    override fun openPicker(mimes: List<Mime>, multiple: Boolean) = Later { resolve, _ ->
         val input = window.document.createElement("input").apply {
             setAttribute("type", "file")
             if (mimes.contains(All)) {
@@ -24,8 +21,11 @@ class BrowserFilePicker : FilePicker {
             }
             if (multiple) setAttribute("multiple", "")
         } as HTMLInputElement
-        input.oncancel = { resolve(emptyList()) }
-        input.onchange = { resolve(input.files?.toList() ?: emptyList()) }
+        input.oncancel = { resolve(PickerResponse.Cancelled) }
+        input.onchange = {
+            val files = input.files?.toList() ?: emptyList()
+            resolve(files.toResponse(multiple))
+        }
         input.click()
     }
 

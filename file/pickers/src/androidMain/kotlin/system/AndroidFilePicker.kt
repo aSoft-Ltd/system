@@ -5,19 +5,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import koncurrent.Later
+import koncurrent.later.andThen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import system.internal.AndroidFileChooserPermissionManager
+import system.file.FilePicker
+import system.file.mime.All
+import system.file.mime.Mime
+import system.file.toResponse
 import system.internal.LocalFileImpl
-import system.picker.files.FilePicker
 
 class AndroidFilePicker(private val activity: ComponentActivity) : FilePicker {
-
     private var scope: CoroutineScope? = null
-    override val permission by lazy { AndroidFileChooserPermissionManager(activity, scope) }
+    private val permission by lazy { AndroidFilePickerPermissionManager(activity, scope) }
     private var launcher: ActivityResultLauncher<Array<String>>? = null
     private val results by lazy { Channel<List<Uri>>() }
 
@@ -30,10 +32,10 @@ class AndroidFilePicker(private val activity: ComponentActivity) : FilePicker {
         permission.register()
     }
 
-    override fun openFileChooser(
-        extensions: List<String>,
+    private fun launchPicker(
+        mimes: List<Mime>,
         multiple: Boolean
-    ) = Later<List<LocalFile>> { resolve, reject ->
+    ) = Later { resolve, reject ->
         val s = scope ?: return@Later reject(
             IllegalStateException("AndroidFileChooser has not been registered")
         )
@@ -41,15 +43,27 @@ class AndroidFilePicker(private val activity: ComponentActivity) : FilePicker {
             IllegalStateException("AndroidFileChooser has not been registered")
         )
 
-        l.launch(permission.permissions.toTypedArray())
+        l.launch(mimes.toReadPermissions().toTypedArray())
 
         s.launch {
-            val result = results.receive().mapNotNull { it.path }
-            resolve(result.map { LocalFileImpl(it) })
+            val files = results.receive().mapNotNull { it.path }.map { LocalFileImpl(it) }
+            resolve(files.toResponse(multiple))
         }
     }
 
-    override fun openDirChooser() = TODO("Not yet implemented")
+    override fun openPicker(
+        mimes: List<Mime>,
+        multiple: Boolean
+    ): Later<PickerResponse> {
+        if (mimes.isEmpty()) return openPicker(listOf(All), multiple)
+        if (permission.check(mimes) == Permission.Granted) return launchPicker(mimes, multiple)
+        return permission.request(mimes).andThen { permit ->
+            when (permit) {
+                Permission.Granted -> launchPicker(mimes, multiple)
+                else -> Later(PickerResponse.Denied)
+            }
+        }
+    }
 
     fun unregister() {
         permission.unregister()

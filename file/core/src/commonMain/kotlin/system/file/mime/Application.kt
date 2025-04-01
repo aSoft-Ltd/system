@@ -14,6 +14,11 @@ interface Application : Mime {
         override val text: String get() = "application/json"
     }
 
+    data object Pdf : Mime {
+        override val name: String get() = "PDF"
+        override val text: String get() = "application/pdf"
+    }
+
     data object XML : Application {
         override val name: String get() = "XML"
         override val text: String get() = "application/xml"

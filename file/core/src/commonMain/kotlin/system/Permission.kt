@@ -1,5 +1,5 @@
 package system
 
 enum class Permission {
-    Granted, Denied
+    Unauthorized, Granted, Denied
 }

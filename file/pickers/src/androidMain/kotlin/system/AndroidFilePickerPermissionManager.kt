@@ -1,8 +1,6 @@
-package system.internal
+package system
 
-import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,10 +9,10 @@ import koncurrent.Later
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import system.Permission
-import system.picker.files.FilePickerPermissionsManager
+import system.file.mime.Mime
+import system.file.FilePickerPermissionsManager
 
-class AndroidFileChooserPermissionManager(
+class AndroidFilePickerPermissionManager(
     private val activity: ComponentActivity,
     private var scope: CoroutineScope?
 ) : FilePickerPermissionsManager {
@@ -28,31 +26,21 @@ class AndroidFileChooserPermissionManager(
         }
     }
 
-    override fun check(): Permission {
+    override fun check(mimes: List<Mime>): Permission {
+        val permissions = mimes.toReadPermissions()
+        if (permissions.isEmpty()) { // Old version of android that requires no permission at all
+            return Permission.Granted
+        }
         val granted = permissions.all {
             ContextCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED
         }
-        return if (granted) Permission.Granted else Permission.Denied
+        return if (granted) Permission.Granted else Permission.Unauthorized
     }
 
-    internal val permissions by lazy {
-        buildSet {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                add(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                add(Manifest.permission.READ_MEDIA_AUDIO)
-                add(Manifest.permission.READ_MEDIA_VIDEO)
-                add(Manifest.permission.READ_MEDIA_IMAGES)
-            }
-        }
-    }
+    override fun request(mimes: List<Mime>) = Later<Permission> { resolve, reject ->
+        if (mimes.isEmpty()) return@Later resolve(Permission.Granted)
 
-    override fun request() = Later<Permission> { resolve, reject ->
-        if (check() == Permission.Granted) {
+        if (check(mimes) == Permission.Granted) {
             return@Later resolve(Permission.Granted)
         }
         val l = launcher ?: return@Later reject(
@@ -61,6 +49,7 @@ class AndroidFileChooserPermissionManager(
         val s = scope ?: return@Later reject(
             IllegalStateException("Permission manager not initialized")
         )
+        val permissions = mimes.toReadPermissions()
         l.launch(permissions.toTypedArray())
         s.launch {
             val results = results.receive()
