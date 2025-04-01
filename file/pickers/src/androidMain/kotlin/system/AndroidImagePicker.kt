@@ -3,7 +3,11 @@ package system
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageAndVideo
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.VideoOnly
 import koncurrent.Later
 import koncurrent.later.andThen
 import kotlinx.coroutines.CoroutineScope
@@ -13,20 +17,22 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import system.file.FilePicker
 import system.file.mime.All
+import system.file.mime.Image
 import system.file.mime.Mime
+import system.file.mime.Video
 import system.file.toResponse
 import system.internal.LocalFileImpl
 
-class AndroidFilePicker(private val activity: ComponentActivity) : FilePicker {
+class AndroidImagePicker(private val activity: ComponentActivity) : FilePicker {
     private var scope: CoroutineScope? = null
     private val permission by lazy { AndroidPickerPermissionManager(activity, scope) }
-    private var launcher: ActivityResultLauncher<Array<String>>? = null
+    private var launcher: ActivityResultLauncher<PickVisualMediaRequest>? = null
     private val results by lazy { Channel<List<Uri>>() }
 
     fun register() {
         if (launcher != null) return
         scope = CoroutineScope(SupervisorJob())
-        launcher = activity.registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        launcher = activity.registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
             scope?.launch { results.send(uris) }
         }
         permission.register()
@@ -43,12 +49,22 @@ class AndroidFilePicker(private val activity: ComponentActivity) : FilePicker {
             IllegalStateException("AndroidFileChooser has not been registered")
         )
 
-        l.launch(mimes.toReadPermissions().toTypedArray())
+        val request = PickVisualMediaRequest.Builder()
+            .setMediaType(mimes.toMediaType())
+            .build()
+        l.launch(request)
 
         s.launch {
             val files = results.receive().mapNotNull { it.path }.map { LocalFileImpl(it) }
             resolve(files.toResponse(multiple))
         }
+    }
+
+    private fun List<Mime>.toMediaType() = when {
+        isEmpty() -> ImageAndVideo
+        all { it is Image } -> ImageOnly
+        all { it is Video } -> VideoOnly
+        else -> ImageAndVideo
     }
 
     override fun openPicker(

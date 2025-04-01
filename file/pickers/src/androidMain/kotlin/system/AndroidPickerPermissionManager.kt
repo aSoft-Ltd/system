@@ -10,12 +10,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import system.file.mime.Mime
-import system.file.FilePickerPermissionsManager
+import system.file.PickerPermissionsManager
 
-class AndroidFilePickerPermissionManager(
+class AndroidPickerPermissionManager(
     private val activity: ComponentActivity,
     private var scope: CoroutineScope?
-) : FilePickerPermissionsManager {
+) : PickerPermissionsManager {
     private var launcher: ActivityResultLauncher<Array<String>>? = null
     private val results by lazy { Channel<Map<String, Boolean>>() }
 
@@ -37,7 +37,7 @@ class AndroidFilePickerPermissionManager(
         return if (granted) Permission.Granted else Permission.Unauthorized
     }
 
-    override fun request(mimes: List<Mime>) = Later<Permission> { resolve, reject ->
+    override fun request(mimes: List<Mime>) = Later { resolve, reject ->
         if (mimes.isEmpty()) return@Later resolve(Permission.Granted)
 
         if (check(mimes) == Permission.Granted) {

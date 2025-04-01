@@ -12,15 +12,12 @@ import system.file.mime.Mime
 import system.file.toResponse
 
 class OSXFilePicker(private var controller: UIViewController?) : FilePicker {
+
     fun initialize(c: UIViewController) {
         controller = c
     }
 
-    override fun openPicker(mimes: List<Mime>, multiple: Boolean): Later<PickerResponse> = Later { resolve, reject ->
-        val c = controller ?: return@Later reject(
-            IllegalStateException("FilePicker has not been registered")
-        )
-
+    override fun openPicker(mimes: List<Mime>, multiple: Boolean): Later<PickerResponse> = Later { resolve, _ ->
         val types = when {
             mimes.isEmpty() -> listOf(UTType.typeWithMIMEType("*/*"))
             else -> mimes.mapNotNull { UTType.typeWithMIMEType(it.text) }
@@ -36,13 +33,15 @@ class OSXFilePicker(private var controller: UIViewController?) : FilePicker {
             override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
                 val results = didPickDocumentsAtURLs.mapNotNull { it as? NSURL }.mapNotNull { it.path }
                 resolve(results.map { LocalFileImpl(it) }.toResponse(multiple))
+                picker.dismissModalViewControllerAnimated(true)
             }
 
             override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
                 resolve(PickerResponse.Cancelled)
+                picker.dismissModalViewControllerAnimated(true)
             }
         }
-
+        val c = controller ?: UIViewController()
         c.presentViewController(picker, animated = true, null)
     }
 

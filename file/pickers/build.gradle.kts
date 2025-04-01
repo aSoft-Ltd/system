@@ -79,16 +79,16 @@ kotlin {
             }
         }
 
-        val linuxMain by creating {
-            dependsOn(commonMain)
-        }
-
-        linuxTargets.forEach {
-            val main by it.compilations.getting {}
-            main.defaultSourceSet {
-                dependsOn(linuxMain)
-            }
-        }
+//        val linuxMain by creating {
+//            dependsOn(commonMain)
+//        }
+//
+//        linuxTargets.forEach {
+//            val main by it.compilations.getting {}
+//            main.defaultSourceSet {
+//                dependsOn(linuxMain)
+//            }
+//        }
     }
 }
 
