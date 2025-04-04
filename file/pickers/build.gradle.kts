@@ -52,6 +52,11 @@ kotlin {
             }
         }
 
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.koncurrent.later.coroutines)
+            }
+        }
         val wasmMain by creating {
             dependsOn(commonMain)
             dependencies {

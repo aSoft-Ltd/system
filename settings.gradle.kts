@@ -20,3 +20,5 @@ listOf(
 rootProject.name = "system"
 
 includeSubs("system-file", "file", "core", "pickers", "manager")
+
+includeSubs("samples", "samples", "shared", "desktop")
