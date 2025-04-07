@@ -19,7 +19,7 @@ plugins {
 description = "The compose sdk to assist in building of the apps"
 
 android {
-    namespace = "tz.co.asoft.academia.compose"
+    namespace = "tz.co.asoft.system.file.compose"
     compileSdk = androidx.versions.compile.sdk.get().toInt()
     defaultConfig {
         minSdk = 25 // because of the coil dependency has this as it's min sdk
@@ -76,24 +76,12 @@ kotlin {
 
     val ios = listOf(iosArm64(), iosX64(), iosSimulatorArm64())
 
-    for (device in ios) {
-        device.binaries.framework {
-            baseName = "AcademiaUI"
-            binaryOption("bundledId", "tz.co.asoft.academia")
-            isStatic = true
-        }
-    }
-
     sourceSets {
         val commonMain by getting {
             dependencies {
                 api(compose.runtime)
                 api(compose.foundation)
-                api(compose.material3)
-                api(compose.materialIconsExtended)
-                implementation(compose.components.resources)
                 api(projects.systemFileManager)
-                api(projects.systemFileCompose)
             }
         }
 
@@ -127,12 +115,6 @@ kotlin {
 
 repositories {
     mavenCentral()
-}
-
-compose {
-    resources {
-        packageOfResClass = "academia.generated.resources"
-    }
 }
 
 rootProject.the<NodeJsRootExtension>().apply {

@@ -6,6 +6,7 @@ import koncurrent.TODOLater
 import system.file.FilePickers
 import system.internal.FileInfoImpl
 import system.internal.LocalFileImpl
+import java.io.File
 
 class JvmFileManager : FileManager {
     override val pickers: FilePickers = FilePickers(documents = JvmFilePicker(), media = JvmFilePicker())
@@ -20,5 +21,13 @@ class JvmFileManager : FileManager {
 
     override fun save(file: LocalFile, name: String?): Later<String> = TODOLater()
 
-    override fun read(file: LocalFile, executor: Executor): Later<ByteArray> = TODOLater()
+    override fun read(file: LocalFile, executor: Executor): Later<ByteArray> = Later { resolve, reject ->
+        try {
+            file as LocalFileImpl
+            val f = File(file.path)
+            resolve(f.readBytes())
+        } catch (e: Exception) {
+            reject(e)
+        }
+    }
 }

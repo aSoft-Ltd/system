@@ -28,7 +28,7 @@ internal fun FilePicker(
                 }
             }
         ) {
-            Text("Pick Image")
+            Text("Pick File")
         }
 
         Column {
@@ -49,3 +49,6 @@ internal fun PickedFile(
         "File: ${file.name()}, Size: $size"
     )
 }
+
+
+//
