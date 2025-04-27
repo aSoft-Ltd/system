@@ -30,7 +30,7 @@ class OSXImagePicker : FilePicker {
             override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
                 picker.dismissModalViewControllerAnimated(animated = true)
                 if (didFinishPicking.isEmpty()) {
-                    resolve(PickerResponse.Cancelled)
+                    resolve(PickerResponseOld.Cancelled)
                 } else {
                     val results = didFinishPicking.mapNotNull {
                         it as? PHPickerResult
@@ -62,12 +62,12 @@ class OSXImagePicker : FilePicker {
         }
     }
 
-    override fun openPicker(mimes: List<Mime>, multiple: Boolean): Later<PickerResponse> {
+    override fun openPicker(mimes: List<Mime>, multiple: Boolean): Later<PickerResponseOld> {
         if (permission.check(mimes) == Permission.Granted) return launchPicker(mimes, multiple)
         return permission.request(mimes).andThen { permit ->
             when (permit) {
                 Permission.Granted -> launchPicker(mimes, multiple)
-                else -> Later(PickerResponse.Denied)
+                else -> Later(PickerResponseOld.Denied)
             }
         }
     }

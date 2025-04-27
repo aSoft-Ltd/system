@@ -17,7 +17,7 @@ class OSXFilePicker(private var controller: UIViewController?) : FilePicker {
         controller = c
     }
 
-    override fun openPicker(mimes: List<Mime>, multiple: Boolean): Later<PickerResponse> = Later { resolve, _ ->
+    override fun openPicker(mimes: List<Mime>, multiple: Boolean): Later<PickerResponseOld> = Later { resolve, _ ->
         val types = when {
             mimes.isEmpty() -> listOf(UTType.typeWithMIMEType("*/*"))
             else -> mimes.mapNotNull { UTType.typeWithMIMEType(it.text) }
@@ -37,7 +37,7 @@ class OSXFilePicker(private var controller: UIViewController?) : FilePicker {
             }
 
             override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
-                resolve(PickerResponse.Cancelled)
+                resolve(PickerResponseOld.Cancelled)
                 picker.dismissModalViewControllerAnimated(true)
             }
         }

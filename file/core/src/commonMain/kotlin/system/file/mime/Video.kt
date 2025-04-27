@@ -1,12 +1,17 @@
 package system.file.mime
 
-interface Video : Mime {
-    override val name: String
-    override val text: String
-
+interface Video : MediaMime {
     companion object : Video {
         override val name: String = "Video"
         override val text: String = "video/*"
+
+        val All by lazy {
+            listOf(
+                MP4, MKV, AVI, MOV, WMV, FLV, WEBM, OGV, M4V, TS,
+                GP3, ASF, RMVB, MTS, M2TS, VOB, DVRMS, DIVX, XVID,
+                MPG, MPEG
+            )
+        }
     }
 
     data object MP4 : Video {

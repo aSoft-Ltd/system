@@ -1,9 +1,6 @@
 package system.file.mime
 
 interface Audio : Mime {
-    override val name: String
-    override val text: String
-
     companion object : Audio {
         override val name: String = "Audio"
         override val text: String = "audio/*"

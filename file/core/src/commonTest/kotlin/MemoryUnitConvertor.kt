@@ -48,7 +48,7 @@ class MemoryUnitConvertor {
     @Test
     fun should_be_able_to_get_the_best_bits_presentation() {
         val size = memorySize("8192b").toBestSize()
-        expect(size.toString()).toBe("8.192Kb")
+        expect(size.toString()).toBe("8.19Kb")
     }
 
     @Test

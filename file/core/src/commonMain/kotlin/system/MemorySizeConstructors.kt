@@ -46,3 +46,15 @@ private fun Char.toMultiplier() = when (this) {
     in listOf('Y', 'y') -> Multiplier.Yotta
     else -> Multiplier.Unit
 }
+
+val Number.bytes get() = MemorySize(this.toDouble(), Multiplier.Unit, MemoryUnit.Bytes)
+val Number.bits get() = MemorySize(this.toDouble(), Multiplier.Unit, MemoryUnit.Bits)
+
+val Number.KB get() = MemorySize(this.toDouble(), Multiplier.Kilo, MemoryUnit.Bytes)
+val Number.Kb get() = MemorySize(this.toDouble(), Multiplier.Kilo, MemoryUnit.Bits)
+
+val Number.MB get() = MemorySize(this.toDouble(), Multiplier.Mega, MemoryUnit.Bytes)
+val Number.Mb get() = MemorySize(this.toDouble(), Multiplier.Mega, MemoryUnit.Bits)
+
+val Number.GB get() = MemorySize(this.toDouble(), Multiplier.Giga, MemoryUnit.Bytes)
+val Number.Gb get() = MemorySize(this.toDouble(), Multiplier.Giga, MemoryUnit.Bits)

@@ -2,18 +2,20 @@
 
 package system
 
-import system.MemoryUnit.*
-import system.serializers.MemorySizeSerializer
 import kotlinx.JsExport
 import kotlinx.serialization.Serializable
+import system.MemoryUnit.Bits
+import system.MemoryUnit.Bytes
+import system.serializers.MemorySizeSerializer
+import kotlin.math.round
 
 @Serializable(with = MemorySizeSerializer::class)
 data class MemorySize(
     val value: Double,
     val multiplier: Multiplier,
     val unit: MemoryUnit
-) {
-    override fun toString() = "${value.toString().removeSuffix(".0")}${multiplier}${unit}"
+) : Comparable<MemorySize> {
+    override fun toString() = "${(round(value * 100) / 100).toString().removeSuffix(".0")}${multiplier}${unit}"
 
     private val convertor by lazy {
         when (unit) {
@@ -50,4 +52,14 @@ data class MemorySize(
     }
 
     fun inBytes() = toBytes().to(Multiplier.Unit).value
+
+    override fun compareTo(other: MemorySize): Int {
+        if (unit == other.unit && multiplier == other.multiplier) {
+            return value.compareTo(other.value)
+        }
+
+        if (unit == other.unit) return compareTo(other.to(multiplier))
+
+        return toBits().compareTo(other.toBits())
+    }
 }

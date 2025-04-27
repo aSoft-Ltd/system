@@ -9,9 +9,14 @@ import system.internal.LocalFileImpl
 import java.io.File
 
 class JvmFileManager : FileManager {
-    override val pickers: FilePickers = FilePickers(documents = JvmFilePicker(), media = JvmFilePicker())
+    override val pickers: FilePickers = FilePickers(
+        documents = JvmMultiFilePicker(),
+        document = JvmSingleFilePicker(),
+        medias = JvmMultiMediaPicker(),
+        media = JvmSingleMediaPicker(),
+    )
 
-    override fun exists(file: LocalFile): Boolean = false
+    override fun exists(file: LocalFile): Boolean = (file as? LocalFileImpl)?.let { File(it.path).exists() } ?: false
 
     override fun info(file: LocalFile): FileInfo = FileInfoImpl(file as LocalFileImpl)
 

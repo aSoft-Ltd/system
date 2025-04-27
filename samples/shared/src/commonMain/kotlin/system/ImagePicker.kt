@@ -10,25 +10,39 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.window.Dialog
 import koncurrent.later.catch
 import koncurrent.later.then
+import kotlinx.coroutines.launch
+import system.file.PickerLimit
+import system.file.PickingException
+import system.file.mime.Image
+import system.file.picker.response.Cancelled
+import system.file.picker.response.Denied
+import system.file.picker.response.Failure
+import system.file.picker.response.FilePicked
+import system.file.picker.response.FilesPicked
 
 @Composable
 internal fun ImagePicker(
     files: FileManager
 ) {
+    val scope = rememberCoroutineScope()
     Column {
         val picked = remember { mutableStateListOf<LocalFile>() }
         val denied = remember { mutableStateOf(false) }
+        val errors = remember { mutableStateListOf<PickingException>() }
         Button(
             onClick = {
-                files.pickers.media.openPicker().then {
-                    when (it) {
-                        is PickerResponse.Cancelled -> {}
-                        is PickerResponse.Denied -> denied.value = true
-                        is PickerResponse.Picked -> picked += it
+                scope.launch {
+                    when (val response = files.pickers.media.open(mimes = listOf(Image))) {
+                        is Cancelled -> {}
+                        is Denied -> denied.value = true
+                        is Failure -> errors += response.errors
+                        is FilePicked -> picked += response.file
                     }
                 }
             }
@@ -36,8 +50,31 @@ internal fun ImagePicker(
             Text("Pick Image")
         }
 
+        Button(
+            onClick = {
+                scope.launch {
+                    when (val response = files.pickers.medias.open(mimes = listOf(Image), limit = PickerLimit(count = 3, size = 1000.KB))) {
+                        is Cancelled -> {}
+                        is Denied -> denied.value = true
+                        is Failure -> errors += response
+                        is FilesPicked -> picked += response
+                    }
+                }
+            }
+        ) {
+            Text("Pick Images")
+        }
+
         Column {
             for (file in picked) PickedImage(files, file)
+        }
+
+        if (errors.isNotEmpty()) Dialog(
+            onDismissRequest = { errors.clear() }
+        ) {
+            Column {
+                for (error in errors) Text(error.message)
+            }
         }
     }
 }

@@ -21,12 +21,12 @@ class BrowserFilePicker : FilePicker {
             }
             if (multiple) setAttribute("multiple", "")
         } as HTMLInputElement
-        input.oncancel = { resolve(PickerResponse.Cancelled) }
+        input.oncancel = { resolve(PickerResponseOld.Cancelled) }
         input.onchange = {
             val files = input.files?.toList() ?: emptyList()
             val response = when (files.isEmpty()) {
-                true -> PickerResponse.Cancelled
-                false -> PickerResponse.Picked(files)
+                true -> PickerResponseOld.Cancelled
+                false -> PickerResponseOld.Picked(files)
             }
             resolve(response)
         }

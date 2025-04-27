@@ -1,9 +1,6 @@
 package system.file.mime
 
 interface Document : Application {
-    override val name: String
-    override val text: String
-
     companion object : Document {
         override val name: String = "Document"
         override val text: String = "application/*"

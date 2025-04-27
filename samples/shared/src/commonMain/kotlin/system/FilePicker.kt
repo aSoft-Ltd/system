@@ -1,29 +1,57 @@
 package system
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import koncurrent.later.then
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.launch
+import system.file.PickingException
+import system.file.picker.response.Cancelled
+import system.file.picker.response.Denied
+import system.file.picker.response.Failure
+import system.file.picker.response.FilePicked
+import system.file.picker.response.FilesPicked
 import kotlin.math.round
 
 @Composable
-internal fun FilePicker(
+internal fun FilesPicker(
     files: FileManager
 ) {
+    val scope = rememberCoroutineScope()
     Column {
         val picked = remember { mutableStateListOf<LocalFile>() }
         val denied = remember { mutableStateOf(false) }
+        val errors = remember { mutableStateListOf<PickingException>() }
         Button(
             onClick = {
-                files.pickers.documents.openPicker().then {
-                    when (it) {
-                        is PickerResponse.Cancelled -> {}
-                        is PickerResponse.Denied -> denied.value = true
-                        is PickerResponse.Picked -> picked += it
+                scope.launch {
+                    when (val response = files.pickers.documents.open()) {
+                        is Cancelled -> {}
+                        is Denied -> denied.value = true
+                        is Failure -> errors += response
+                        is FilesPicked -> picked += response
+                    }
+                }
+            }
+        ) {
+            Text("Pick Files")
+        }
+
+        Button(
+            onClick = {
+                scope.launch {
+                    when (val response = files.pickers.document.open(limit = 10.KB)) {
+                        is Cancelled -> {}
+                        is Denied -> denied.value = true
+                        is Failure -> errors += response.errors
+                        is FilePicked -> picked += response.file
                     }
                 }
             }
@@ -33,6 +61,18 @@ internal fun FilePicker(
 
         Column {
             for (file in picked) PickedFile(files.info(file))
+        }
+
+        if (errors.isNotEmpty()) Dialog(
+            onDismissRequest = {
+                errors.clear()
+            }
+        ) {
+            Column(Modifier.fillMaxSize(0.9f)) {
+                for ((idx, error) in errors.withIndex()) {
+                    Text("${idx + 1}/${errors.size}: ${error.message}")
+                }
+            }
         }
     }
 }
@@ -49,6 +89,3 @@ internal fun PickedFile(
         "File: ${file.name()}, Size: $size"
     )
 }
-
-
-//

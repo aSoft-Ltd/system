@@ -1,6 +1,8 @@
 package system.file
 
 class FilePickers(
-    val documents: FilePicker,
-    val media: FilePicker
+    val documents: MultiFilePicker,
+    val document: SingleFilePicker,
+    val medias: MultiMediaPicker,
+    val media: SingleMediaPicker,
 )

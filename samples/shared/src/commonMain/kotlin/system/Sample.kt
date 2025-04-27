@@ -8,7 +8,7 @@ fun Sample(
     files: FileManager
 ) {
     Column {
-        FilePicker(files)
+        FilesPicker(files)
         ImagePicker(files)
     }
 }

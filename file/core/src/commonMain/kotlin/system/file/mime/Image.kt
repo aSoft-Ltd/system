@@ -1,12 +1,17 @@
 package system.file.mime
 
-interface Image : Mime {
-    override val name: String
-    override val text: String
-
+interface Image : MediaMime {
     companion object : Image {
         override val name: String = "Image"
         override val text: String = "image/*"
+
+        val All by lazy {
+            listOf(
+                JPG, JPEG, PNG, GIF, BMP, SVG, TIFF, WEBP, HEIC, ICO,
+                AVIF, PSD, CR2, NEF, DNG, RAW, ARW, ORF, RW2, SR2,
+                X3F, PEF, DCR, KDC
+            )
+        }
     }
 
     data object JPG : Image {

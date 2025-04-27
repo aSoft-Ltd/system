@@ -70,13 +70,13 @@ class AndroidImagePicker(private val activity: ComponentActivity) : FilePicker {
     override fun openPicker(
         mimes: List<Mime>,
         multiple: Boolean
-    ): Later<PickerResponse> {
+    ): Later<PickerResponseOld> {
         if (mimes.isEmpty()) return openPicker(listOf(All), multiple)
         if (permission.check(mimes) == Permission.Granted) return launchPicker(mimes, multiple)
         return permission.request(mimes).andThen { permit ->
             when (permit) {
                 Permission.Granted -> launchPicker(mimes, multiple)
-                else -> Later(PickerResponse.Denied)
+                else -> Later(PickerResponseOld.Denied)
             }
         }
     }
