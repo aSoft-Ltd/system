@@ -13,7 +13,6 @@ import javax.swing.SwingUtilities
 import kotlin.coroutines.resume
 
 abstract class AbstractMultiFilePicker {
-
     protected suspend fun show(
         mimes: List<Mime>,
         limit: PickerLimit

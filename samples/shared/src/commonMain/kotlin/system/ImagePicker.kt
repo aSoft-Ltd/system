@@ -76,6 +76,14 @@ internal fun ImagePicker(
                 for (error in errors) Text(error.message)
             }
         }
+
+        if(denied.value) Dialog(
+            onDismissRequest = { denied.value = false }
+        ) {
+            Column {
+                Text("Permission denied")
+            }
+        }
     }
 }
 

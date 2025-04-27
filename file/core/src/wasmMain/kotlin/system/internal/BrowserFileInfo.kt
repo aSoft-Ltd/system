@@ -5,7 +5,7 @@ import system.MemorySize
 import system.MemoryUnit
 import system.Multiplier
 
-internal class FileInfoImpl(override val file: LocalFileImpl) : FileInfo {
+class BrowserFileInfo(override val file: LocalFileImpl) : FileInfo {
 
     override fun name(extension: Boolean): String {
         if (extension) return file.wrapped.name

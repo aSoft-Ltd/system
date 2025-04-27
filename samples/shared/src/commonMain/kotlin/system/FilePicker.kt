@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
+import system.file.PickerLimit
 import system.file.PickingException
 import system.file.picker.response.Cancelled
 import system.file.picker.response.Denied
@@ -32,7 +33,7 @@ internal fun FilesPicker(
         Button(
             onClick = {
                 scope.launch {
-                    when (val response = files.pickers.documents.open()) {
+                    when (val response = files.pickers.documents.open(limit = PickerLimit(size = 20.KB, count = 4))) {
                         is Cancelled -> {}
                         is Denied -> denied.value = true
                         is Failure -> errors += response
@@ -72,6 +73,16 @@ internal fun FilesPicker(
                 for ((idx, error) in errors.withIndex()) {
                     Text("${idx + 1}/${errors.size}: ${error.message}")
                 }
+            }
+        }
+
+        if (denied.value) Dialog(
+            onDismissRequest = {
+                denied.value = false
+            }
+        ) {
+            Column(Modifier.fillMaxSize(0.9f)) {
+                Text("Permission denied")
             }
         }
     }
