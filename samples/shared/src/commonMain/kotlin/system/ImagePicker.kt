@@ -53,7 +53,7 @@ internal fun ImagePicker(
         Button(
             onClick = {
                 scope.launch {
-                    when (val response = files.pickers.medias.open(mimes = listOf(Image), limit = PickerLimit(count = 3, size = 1000.KB))) {
+                    when (val response = files.pickers.medias.open(mimes = listOf(Image), limit = PickerLimit(count = 3, size = 20.KB))) {
                         is Cancelled -> {}
                         is Denied -> denied.value = true
                         is Failure -> errors += response

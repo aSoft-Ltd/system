@@ -14,27 +14,25 @@ import kotlin.coroutines.resume
 
 abstract class AbstractSingleFilePicker {
 
-    private val chooser by lazy {
-        JFileChooser().apply {
-            fileSelectionMode = JFileChooser.FILES_ONLY
-            isMultiSelectionEnabled = false
-        }
-    }
-
     protected suspend fun show(
         mimes: List<Mime>,
         limit: MemorySize
     ): SinglePickerResponse = suspendCancellableCoroutine { cont ->
-        chooser.fileFilter = mimes.toFileFilter(limit)
-        chooser.name = "Select File"
+        val chooser = JFileChooser().apply {
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            isMultiSelectionEnabled = false
+            fileFilter = mimes.toFileFilter(limit)
+            name = "Select File"
+        }
+
         SwingUtilities.invokeLater {
             val result = chooser.showOpenDialog(null)
             val response = when (result) {
                 JFileChooser.APPROVE_OPTION -> {
                     val file = chooser.selectedFile
                     val size = file.length().bytes
+                    val mime = Mime.from(file.extension)
                     val errors = buildList {
-                        val mime = Mime.from(file.extension)
                         if (mimes.none { it.matches(mime) }) add(PickingException.InvalidMimeType(file.name, mime, mimes))
                         if (file.isDirectory) add(PickingException.FileIsDirectory(file.name))
                         if (size > limit) add(PickingException.SizeLimitExceeded(file.name, size, limit))
