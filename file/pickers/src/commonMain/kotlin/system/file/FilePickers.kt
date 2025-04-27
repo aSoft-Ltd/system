@@ -1,8 +1,13 @@
 package system.file
 
-class FilePickers(
-    val documents: MultiFilePicker,
-    val document: SingleFilePicker,
-    val medias: MultiMediaPicker,
-    val media: SingleMediaPicker,
+class FilePickers<
+    out MFP : MultiFilePicker,
+    out SFP : SingleFilePicker,
+    out MMP : MultiMediaPicker,
+    out SMP : SingleMediaPicker
+>(
+    val documents: MFP,
+    val document: SFP,
+    val medias: MMP,
+    val media: SMP,
 )

@@ -33,7 +33,7 @@ internal fun FilesPicker(
         Button(
             onClick = {
                 scope.launch {
-                    when (val response = files.pickers.documents.open(limit = PickerLimit(size = 20.KB, count = 4))) {
+                    when (val response = files.pickers.documents.open(limit = PickerLimit(size = 20.KB, count = 2))) {
                         is Cancelled -> {}
                         is Denied -> denied.value = true
                         is Failure -> errors += response

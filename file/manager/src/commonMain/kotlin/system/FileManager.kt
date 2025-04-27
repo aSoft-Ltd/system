@@ -3,7 +3,7 @@ package system
 import system.file.FilePickers
 
 interface FileManager : FileOpener, FileSaver, FileReader {
-    val pickers: FilePickers
+    val pickers: FilePickers<*, *, *, *>
     fun exists(file: LocalFile): Boolean
     fun info(file: LocalFile): FileInfo
 }

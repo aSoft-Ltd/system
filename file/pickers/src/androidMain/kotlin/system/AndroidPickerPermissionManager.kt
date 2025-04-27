@@ -5,12 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import koncurrent.Later
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import system.file.mime.Mime
 import system.file.PickerPermissionsManager
+import system.file.mime.Mime
 
 class AndroidPickerPermissionManager(
     private val activity: ComponentActivity,
@@ -37,25 +36,18 @@ class AndroidPickerPermissionManager(
         return if (granted) Permission.Granted else Permission.Unauthorized
     }
 
-    override fun request(mimes: List<Mime>) = Later { resolve, reject ->
-        if (mimes.isEmpty()) return@Later resolve(Permission.Granted)
+    override suspend fun request(mimes: List<Mime>): Permission {
+        if (mimes.isEmpty()) return Permission.Unauthorized
 
-        if (check(mimes) == Permission.Granted) {
-            return@Later resolve(Permission.Granted)
-        }
-        val l = launcher ?: return@Later reject(
-            IllegalStateException("Permission manager not registered")
-        )
-        val s = scope ?: return@Later reject(
-            IllegalStateException("Permission manager not initialized")
-        )
+        if (check(mimes) == Permission.Granted) return Permission.Granted
+
+        val l = launcher ?: throw IllegalStateException("Permission manager not registered")
+
         val permissions = mimes.toReadPermissions()
         l.launch(permissions.toTypedArray())
-        s.launch {
-            val results = results.receive()
-            val granted = results.all { it.value }
-            resolve(if (granted) Permission.Granted else Permission.Denied)
-        }
+        val results = results.receive()
+        val granted = results.all { it.value }
+        return if (granted) Permission.Granted else Permission.Denied
     }
 
     fun unregister() {

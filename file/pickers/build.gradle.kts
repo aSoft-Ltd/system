@@ -47,8 +47,7 @@ kotlin {
 
         val androidMain by getting {
             dependencies {
-                // Move this into versions after merging
-                implementation(androidx.activity.ktx)?.because("We need it to check permissions")
+                api(androidx.activity.ktx)?.because("We need it to check permissions")
             }
         }
 

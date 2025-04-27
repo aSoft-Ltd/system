@@ -15,6 +15,11 @@ data class MemorySize(
     val multiplier: Multiplier,
     val unit: MemoryUnit
 ) : Comparable<MemorySize> {
+
+    companion object {
+        val Zero by lazy { MemorySize(0.0, Multiplier.Unit, Bytes) }
+    }
+
     override fun toString() = "${(round(value * 100) / 100).toString().removeSuffix(".0")}${multiplier}${unit}"
 
     private val convertor by lazy {
