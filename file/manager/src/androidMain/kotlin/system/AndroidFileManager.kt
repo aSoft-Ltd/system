@@ -4,9 +4,6 @@ import androidx.activity.ComponentActivity
 import koncurrent.Executor
 import koncurrent.Later
 import koncurrent.TODOLater
-import system.file.DeniedMultiFilePicker
-import system.file.DeniedSingleFilePicker
-import system.file.DeniedSingleMediaPicker
 import system.file.FilePickers
 import system.internal.FileInfo
 import system.internal.LocalFilePath
@@ -17,15 +14,18 @@ import java.io.File
 class AndroidFileManager(private val activity: ComponentActivity) : FileManager {
     override val pickers by lazy {
         FilePickers(
-            documents = DeniedMultiFilePicker(),
-            document = DeniedSingleFilePicker(),
+            documents = AndroidMultiFilePicker(activity),
+            document = AndroidSingleFilePicker(activity),
             medias = AndroidMultiMediaPicker(activity),
-            media = DeniedSingleMediaPicker(),
+            media = AndroidSingleMediaPicker(activity),
         )
     }
 
     fun register() {
+        pickers.documents.register()
+        pickers.document.register()
         pickers.medias.register()
+        pickers.media.register()
     }
 
     override fun exists(file: LocalFile): Boolean {
@@ -66,6 +66,9 @@ class AndroidFileManager(private val activity: ComponentActivity) : FileManager 
     }
 
     fun unregister() {
+        pickers.documents.unregister()
+        pickers.document.unregister()
         pickers.medias.unregister()
+        pickers.media.unregister()
     }
 }
