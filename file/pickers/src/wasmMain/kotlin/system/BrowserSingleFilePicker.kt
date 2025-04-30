@@ -1,9 +1,10 @@
 package system
 
+import system.file.PickerLimit
 import system.file.SingleFilePicker
 import system.file.mime.Mime
-import system.file.picker.response.SinglePickerResponse
+import system.file.picker.response.toSingle
 
-class BrowserSingleFilePicker : AbstractSingleFilePicker(), SingleFilePicker {
-    override suspend fun open(mimes: List<Mime>, limit: MemorySize): SinglePickerResponse = show(mimes, limit)
+class BrowserSingleFilePicker : AbstractFilePicker(), SingleFilePicker {
+    override suspend fun open(mimes: List<Mime>, limit: MemorySize) = show(mimes, PickerLimit(limit, 1)).toSingle()
 }

@@ -10,6 +10,7 @@ import platform.darwin.NSObject
 import system.file.FilePicker
 import system.file.mime.Mime
 import system.file.toResponse
+import system.internal.LocalFilePath
 
 class OSXFilePicker(private var controller: UIViewController?) : FilePicker {
 
@@ -32,7 +33,7 @@ class OSXFilePicker(private var controller: UIViewController?) : FilePicker {
 
             override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
                 val results = didPickDocumentsAtURLs.mapNotNull { it as? NSURL }.mapNotNull { it.path }
-                resolve(results.map { LocalFileImpl(it) }.toResponse(multiple))
+                resolve(results.map { LocalFilePath(it) }.toResponse(multiple))
                 picker.dismissModalViewControllerAnimated(true)
             }
 

@@ -2,6 +2,7 @@ package system
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,34 +36,40 @@ internal fun ImagePicker(
         val picked = remember { mutableStateListOf<LocalFile>() }
         val denied = remember { mutableStateOf(false) }
         val errors = remember { mutableStateListOf<PickingException>() }
-        Button(
-            onClick = {
-                scope.launch {
-                    when (val response = files.pickers.media.open(mimes = listOf(Image))) {
-                        is Cancelled -> {}
-                        is Denied -> denied.value = true
-                        is Failure -> errors += response.errors
-                        is FilePicked -> picked += response.file
+        Row {
+            Button(
+                onClick = {
+                    scope.launch {
+                        when (val response = files.pickers.media.open(mimes = listOf(Image))) {
+                            is Cancelled -> {}
+                            is Denied -> denied.value = true
+                            is Failure -> errors += response.errors
+                            is FilePicked -> picked += response.file
+                        }
                     }
                 }
+            ) {
+                Text("Pick Image")
             }
-        ) {
-            Text("Pick Image")
-        }
 
-        Button(
-            onClick = {
-                scope.launch {
-                    when (val response = files.pickers.medias.open(mimes = listOf(Image), limit = PickerLimit(count = 2, size = 40.KB))) {
-                        is Cancelled -> {}
-                        is Denied -> denied.value = true
-                        is Failure -> errors += response
-                        is FilesPicked -> picked += response
+            Button(
+                onClick = {
+                    scope.launch {
+                        when (val response = files.pickers.medias.open(mimes = listOf(Image), limit = PickerLimit(count = 4, size = 3.MB))) {
+                            is Cancelled -> {}
+                            is Denied -> denied.value = true
+                            is Failure -> errors += response
+                            is FilesPicked -> picked += response
+                        }
                     }
                 }
+            ) {
+                Text("Pick Images")
             }
-        ) {
-            Text("Pick Images")
+
+            Button(onClick = { picked.clear() }) {
+                Text("Clear All")
+            }
         }
 
         Column {
@@ -77,7 +84,7 @@ internal fun ImagePicker(
             }
         }
 
-        if(denied.value) Dialog(
+        if (denied.value) Dialog(
             onDismissRequest = { denied.value = false }
         ) {
             Column {

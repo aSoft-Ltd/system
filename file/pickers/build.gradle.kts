@@ -34,6 +34,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(projects.systemFileCore)
+                api(kotlinx.coroutines.core)
             }
         }
 
@@ -47,7 +48,7 @@ kotlin {
 
         val androidMain by getting {
             dependencies {
-                api(androidx.activity.ktx)?.because("We need it to check permissions")
+                api(androidx.activity.ktx)?.because("We need it to check permissions while picking files")
             }
         }
 

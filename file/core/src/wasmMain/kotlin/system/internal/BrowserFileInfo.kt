@@ -18,7 +18,7 @@ class BrowserFileInfo(override val file: LocalFileImpl) : FileInfo {
 
     override fun extension(): String = ext
 
-    override fun size(): MemorySize = MemorySize(
+    override suspend fun size(): MemorySize = MemorySize(
         value = file.wrapped.size.toDouble(),
         multiplier = Multiplier.Unit,
         unit = MemoryUnit.Bytes

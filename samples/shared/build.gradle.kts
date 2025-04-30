@@ -78,8 +78,8 @@ kotlin {
 
     for (device in ios) {
         device.binaries.framework {
-            baseName = "AcademiaUI"
-            binaryOption("bundledId", "tz.co.asoft.academia")
+            baseName = "SystemSampleUI"
+            binaryOption("bundledId", "tz.co.asoft.system.sample")
             isStatic = true
         }
     }

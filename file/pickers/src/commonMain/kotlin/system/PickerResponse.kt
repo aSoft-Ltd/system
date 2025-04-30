@@ -6,7 +6,3 @@ sealed interface PickerResponse {
     sealed interface Cancelled : PickerResponse
     sealed interface Failure : PickerResponse
 }
-
-sealed interface PickingResponse {
-
-}

@@ -22,7 +22,7 @@ internal fun List<LocalFile>.toResponse(errors: List<PickingException>): MultiPi
     return FilesPicked(this)
 }
 
-fun FileInfo.fits(mimes: List<Mime>, limit: MemorySize) : List<PickingException> = buildList {
+suspend fun FileInfo.fits(mimes: List<Mime>, limit: MemorySize) : List<PickingException> = buildList {
     val mime = Mime.from(extension())
     val name = name()
     if (mimes.none { it.matches(mime) }) add(PickingException.InvalidMimeType(name, mime, mimes))

@@ -5,16 +5,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import system.file.PickerLimit
 import system.file.PickingException
-import system.file.mime.Application
 import system.file.mime.Image
 import system.file.picker.response.Cancelled
 import system.file.picker.response.Denied
@@ -83,7 +85,7 @@ internal fun FilesPicker(
                 denied.value = false
             }
         ) {
-            Column(Modifier.fillMaxSize(0.9f)) {
+            Column {
                 Text("Permission denied")
             }
         }
@@ -94,9 +96,11 @@ internal fun FilesPicker(
 internal fun PickedFile(
     file: FileInfo
 ) {
-    val size = remember(file) {
-        val res = file.size().toBestSize()
-        res.copy(value = round(res.value * 10) / 10)
+    var size by remember { mutableStateOf(MemorySize.Zero) }
+
+    LaunchedEffect(file) {
+        val s = file.size().toBestSize()
+        size = s.copy(value = round(s.value * 10) / 10)
     }
     Text(
         "File: ${file.name()}, Size: $size"

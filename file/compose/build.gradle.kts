@@ -53,14 +53,14 @@ kotlin {
                 compilerOptions.jvmTarget = JvmTarget.JVM_17
             }
         }
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.unitTest)
     }
 
     jvm {
-//        tasks.withType<Test> {
-//            useJUnitPlatform()
-//        }
+        compilations.all {
+            compileTaskProvider {
+                compilerOptions.jvmTarget = JvmTarget.JVM_17
+            }
+        }
     }
 
     wasmJs {
@@ -85,24 +85,25 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
-            dependencies {
-
-            }
-        }
-
         val androidMain by getting {
             dependsOn(commonMain)
-            dependencies {
+        }
 
-            }
+        val skiaMain by creating {
+            dependsOn(commonMain)
         }
 
         val iosMain by creating {
             dependsOn(commonMain)
-            dependencies {
-                implementation(ktor.client.darwin)
-            }
+            dependsOn(skiaMain)
+        }
+
+        val jvmMain by getting {
+            dependsOn(skiaMain)
+        }
+
+        val wasmJsMain by getting {
+            dependsOn(skiaMain)
         }
 
         for (device in ios) {
