@@ -10,10 +10,11 @@ import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
 import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import system.file.PickerLimit
-import system.file.PickingException
-import system.file.fits
+import system.file.mime.All
+import system.file.mime.Image
 import system.file.mime.MediaMime
 import system.file.mime.Mime
+import system.file.mime.Video
 import system.file.picker.response.Denied
 import system.file.picker.response.MultiPickerResponse
 import system.file.toResponse
@@ -38,9 +39,40 @@ abstract class OSXMediaPicker {
         }
     }
 
+    private fun Mime.toFilters() = when (this) {
+        is Image -> listOf(
+            PHPickerFilter.imagesFilter,
+            PHPickerFilter.depthEffectPhotosFilter,
+            PHPickerFilter.screenshotsFilter,
+            PHPickerFilter.panoramasFilter
+        )
+
+        is Video -> listOf(
+            PHPickerFilter.videosFilter,
+            PHPickerFilter.livePhotosFilter,
+            PHPickerFilter.cinematicVideosFilter,
+            PHPickerFilter.slomoVideosFilter,
+            PHPickerFilter.timelapseVideosFilter
+        )
+
+        else -> emptyList()
+    }
+
+    private fun List<Mime>.toFilter(): PHPickerFilter {
+        if (isEmpty() || contains(All)) {
+            return PHPickerFilter.anyFilterMatchingSubfilters(Image.toFilters() + Video.toFilters())
+        }
+        val filters = buildSet {
+            for (m in this@toFilter) {
+                addAll(m.toFilters())
+            }
+        }
+        return PHPickerFilter.anyFilterMatchingSubfilters(filters.toList())
+    }
+
     private suspend fun launch(mimes: List<Mime>, limit: PickerLimit): MultiPickerResponse {
         val config = PHPickerConfiguration()
-        config.filter = PHPickerFilter.imagesFilter
+        config.filter = mimes.toFilter()
         config.selectionLimit = limit.count.toLong()
 
         val chooser = PHPickerViewController(configuration = config)
@@ -55,17 +87,9 @@ abstract class OSXMediaPicker {
         chooser.dismissViewControllerAnimated(true, completion = null)
 
         val files = providers.map { LocalFileProvider(it) }
+        val infos = files.map { LocalFileInfoProvider(it) }
 
-        val errors = buildList {
-            if (files.size > limit.count) {
-                add(PickingException.CountLimitExceeded(files.size, limit.count))
-            }
-            for (file in files.map { LocalFileInfoProvider(it) }) {
-                addAll(file.fits(mimes, limit.size))
-            }
-        }
-
-        return files.toResponse(errors)
+        return files.toResponse(mimes, limit, infos)
     }
 
     protected suspend fun show(mimes: List<MediaMime>, limit: PickerLimit): MultiPickerResponse {
