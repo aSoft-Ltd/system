@@ -17,7 +17,6 @@ import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import system.file.PickerLimit
 import system.file.PickingException
-import system.file.mime.Image
 import system.file.picker.response.Cancelled
 import system.file.picker.response.Denied
 import system.file.picker.response.Failure
@@ -37,7 +36,7 @@ internal fun FilesPicker(
         Button(
             onClick = {
                 scope.launch {
-                    when (val response = files.pickers.documents.open(mimes = listOf(Image.JPG, Image.JPEG), limit = PickerLimit(size = 400.KB, count = 2))) {
+                    when (val response = files.pickers.documents.open(limit = PickerLimit(size = 10.MB, count = 2))) {
                         is Cancelled -> {}
                         is Denied -> denied.value = true
                         is Failure -> errors += response

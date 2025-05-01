@@ -1,11 +1,13 @@
 package system
 
+import system.file.PickerLimit
 import system.file.SingleFilePicker
 import system.file.mime.Mime
+import system.file.picker.response.toSingle
 
-class JvmSingleFilePicker : AbstractSingleFilePicker(), SingleFilePicker {
+class JvmSingleFilePicker : AbstractFilePicker(), SingleFilePicker {
     override suspend fun open(
         mimes: List<Mime>,
         limit: MemorySize
-    ) = show(mimes, limit)
+    ) = show(mimes, PickerLimit(limit, 1)).toSingle()
 }

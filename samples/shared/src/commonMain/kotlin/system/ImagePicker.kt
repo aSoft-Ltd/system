@@ -73,7 +73,7 @@ internal fun ImagePicker(
         }
 
         Column {
-            for (file in picked) PickedImage(files, file)
+            for (file in picked) Image(manager = files, file)
         }
 
         if (errors.isNotEmpty()) Dialog(

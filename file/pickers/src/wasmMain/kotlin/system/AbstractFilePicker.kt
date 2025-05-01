@@ -5,11 +5,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.HTMLInputElement
 import org.w3c.files.FileList
 import system.file.PickerLimit
-import system.file.PickingException
-import system.file.fits
 import system.file.mime.All
 import system.file.mime.Mime
-import system.file.picker.response.Cancelled
 import system.file.picker.response.MultiPickerResponse
 import system.file.toResponse
 import system.internal.BrowserFileInfo
@@ -40,18 +37,8 @@ abstract class AbstractFilePicker {
 
     protected suspend fun show(mimes: List<Mime>, limit: PickerLimit): MultiPickerResponse {
         val files = files(mimes, limit)
-
-        if (files.isEmpty()) return Cancelled
-
-        val errors = buildList {
-            if (files.size > limit.count) {
-                add(PickingException.CountLimitExceeded(files.size, limit.count))
-            }
-            for (file in files.map { BrowserFileInfo(it) }) {
-                addAll(file.fits(mimes, limit.size))
-            }
-        }
-        return files.toResponse(errors)
+        val infos = files.map { BrowserFileInfo(it) }
+        return files.toResponse(mimes, limit, infos)
     }
 
     private fun FileList.toList(): List<LocalFileImpl> = buildList {

@@ -4,36 +4,45 @@ import koncurrent.Executor
 import koncurrent.Later
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.readBytes
+import platform.Foundation.NSFileManager
 import platform.UIKit.UIViewController
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.loadDataRepresentationForContentType
-import system.file.DeniedMultiFilePicker
-import system.file.DeniedSingleFilePicker
 import system.file.FilePickers
+import system.internal.LocalFileInfoPath
 import system.internal.LocalFileInfoProvider
 import system.internal.LocalFileProvider
+import system.internal.LocalFileUrl
 
 class IosFileManager : FileManager {
 
     override val pickers by lazy {
         FilePickers(
-            documents = DeniedMultiFilePicker(),
-            document = DeniedSingleFilePicker(),
+            documents = OSXMultiFilePicker(),
+            document = OSXSingleFilePicker(),
             medias = OSXMultiMediaPicker(),
             media = OSXSingleMediaPicker()
         )
     }
 
-    fun initialize(host: UIViewController?) {
+    fun initialize(host: UIViewController) {
+        pickers.documents.initialize(host)
+        pickers.document.initialize(host)
         pickers.medias.initialize(host)
         pickers.media.initialize(host)
     }
 
-    override fun exists(file: LocalFile): Boolean {
-        TODO("Not yet implemented")
+    override fun exists(file: LocalFile): Boolean = when (file) {
+        is LocalFileUrl -> file.url.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } ?: false
+        is LocalFileProvider -> true
+        else -> false
     }
 
-    override fun info(file: LocalFile): FileInfo = LocalFileInfoProvider(file as LocalFileProvider)
+    override fun info(file: LocalFile): FileInfo = when (file) {
+        is LocalFileUrl -> LocalFileInfoPath(file)
+        is LocalFileProvider -> LocalFileInfoProvider(file)
+        else -> throw IllegalArgumentException("Unsupported file type on IOS")
+    }
 
     override fun open(file: LocalFile): Later<String> {
         TODO("Not yet implemented")

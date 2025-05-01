@@ -35,7 +35,7 @@ class FileInfoUri(
 
     override fun extension(): String = fullname().split(".").lastOrNull() ?: ""
 
-    override fun size(): MemorySize {
+    override suspend fun size(): MemorySize {
         val cursor = resolver.query(file.uri, null, null, null, null) ?: return MemorySize.Zero
         if (!cursor.moveToFirst()) {
             cursor.close()

@@ -22,7 +22,7 @@ import system.internal.LocalFileProvider
 
 abstract class OSXMediaPicker {
 
-    protected val permission by lazy { OSXImagePickerPermissionManager() }
+    private val permission by lazy { OSXMediaPickerPermissionManager() }
 
     private var host: UIViewController? = null
 

@@ -18,7 +18,7 @@ class FileInfoPath(override val file: LocalFilePath) : FileInfo {
 
     override fun extension(): String = file.path.split(".").lastOrNull() ?: ""
 
-    override fun size(): MemorySize = MemorySize(
+    override suspend fun size(): MemorySize = MemorySize(
         value = File(file.path).length().toDouble(),
         unit = MemoryUnit.Bytes,
         multiplier = Multiplier.Unit

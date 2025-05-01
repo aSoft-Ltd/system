@@ -1,0 +1,40 @@
+package system
+
+import kotlinx.coroutines.suspendCancellableCoroutine
+import system.file.PickerLimit
+import system.file.mime.Mime
+import system.file.picker.response.MultiPickerResponse
+import system.file.toResponse
+import system.internal.FileInfoImpl
+import system.internal.LocalFileImpl
+import system.internal.toFileFilter
+import javax.swing.JFileChooser
+import javax.swing.SwingUtilities
+import kotlin.coroutines.resume
+
+abstract class AbstractFilePicker {
+    protected suspend fun show(
+        mimes: List<Mime>,
+        limit: PickerLimit
+    ): MultiPickerResponse {
+        val chooser = JFileChooser().apply {
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            isMultiSelectionEnabled = limit.count > 1
+            fileFilter = mimes.toFileFilter(limit.size)
+            name = "Select File" + if (limit.count > 1) "s" else ""
+        }
+
+        val files = suspendCancellableCoroutine { cont ->
+            SwingUtilities.invokeLater {
+                val result = chooser.showOpenDialog(null)
+                val response = when (result) {
+                    JFileChooser.APPROVE_OPTION -> chooser.selectedFiles + chooser.selectedFile
+                    else -> emptyArray()
+                }
+                cont.resume(response)
+            }
+        }.mapNotNull { it }.map { LocalFileImpl(it.path) }
+        val infos = files.map { FileInfoImpl(it) }
+        return files.toResponse(mimes, limit, infos)
+    }
+}

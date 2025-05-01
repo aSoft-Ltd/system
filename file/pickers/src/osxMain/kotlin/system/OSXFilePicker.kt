@@ -1,52 +1,61 @@
 package system
 
-import koncurrent.Later
+import kotlinx.coroutines.channels.Channel
 import platform.Foundation.NSURL
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIViewController
 import platform.UniformTypeIdentifiers.UTType
+import platform.UniformTypeIdentifiers.UTTypeItem
 import platform.darwin.NSObject
-import system.file.FilePicker
+import system.file.PickerLimit
+import system.file.mime.All
 import system.file.mime.Mime
+import system.file.picker.response.MultiPickerResponse
 import system.file.toResponse
-import system.internal.LocalFilePath
+import system.internal.LocalFileInfoPath
+import system.internal.LocalFileUrl
 
-class OSXFilePicker(private var controller: UIViewController?) : FilePicker {
+abstract class OSXFilePicker {
 
-    fun initialize(c: UIViewController) {
-        controller = c
+    private var host: UIViewController? = null
+    private val results = Channel<List<NSURL>>()
+    fun initialize(host: UIViewController) {
+        this.host = host
     }
 
-    override fun openPicker(mimes: List<Mime>, multiple: Boolean): Later<PickerResponseOld> = Later { resolve, _ ->
+    private val delegate = object : NSObject(), UIDocumentPickerDelegateProtocol {
+        override fun documentPicker(
+            controller: UIDocumentPickerViewController,
+            didPickDocumentAtURL: NSURL
+        ) = documentPicker(controller, listOf(didPickDocumentAtURL))
+
+        override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
+            results.trySend(didPickDocumentsAtURLs.mapNotNull { it as? NSURL })
+        }
+
+        override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+            results.trySend(emptyList())
+        }
+    }
+
+    protected suspend fun show(mimes: List<Mime>, limit: PickerLimit): MultiPickerResponse {
         val types = when {
-            mimes.isEmpty() -> listOf(UTType.typeWithMIMEType("*/*"))
+            mimes.isEmpty() -> listOf(UTTypeItem)
+            mimes.contains(All) -> listOf(UTTypeItem)
             else -> mimes.mapNotNull { UTType.typeWithMIMEType(it.text) }
         }
-        val picker = UIDocumentPickerViewController(forExportingURLs = types)
-        picker.allowsMultipleSelection = multiple
-        picker.delegate = object : NSObject(), UIDocumentPickerDelegateProtocol {
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentAtURL: NSURL
-            ) = documentPicker(controller, listOf(didPickDocumentAtURL))
 
-            override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
-                val results = didPickDocumentsAtURLs.mapNotNull { it as? NSURL }.mapNotNull { it.path }
-                resolve(results.map { LocalFilePath(it) }.toResponse(multiple))
-                picker.dismissModalViewControllerAnimated(true)
-            }
+        val picker = UIDocumentPickerViewController(forOpeningContentTypes = types, asCopy = true)
 
-            override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
-                resolve(PickerResponseOld.Cancelled)
-                picker.dismissModalViewControllerAnimated(true)
-            }
-        }
-        val c = controller ?: UIViewController()
-        c.presentViewController(picker, animated = true, null)
-    }
+        picker.allowsMultipleSelection = limit.count > 1
+        picker.delegate = delegate
+        host?.presentViewController(picker, animated = true, null) ?: throw IllegalStateException(
+            "OSXFilePicker has not been initialized with a non null host view controller"
+        )
 
-    fun deInitialize() {
-        controller = null
+        val files = results.receive().map { LocalFileUrl(it) }
+        picker.dismissViewControllerAnimated(true, null)
+        return files.toResponse(mimes, limit, files.map { LocalFileInfoPath(it) })
     }
 }

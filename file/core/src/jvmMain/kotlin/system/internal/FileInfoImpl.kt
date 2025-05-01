@@ -6,7 +6,7 @@ import system.MemoryUnit
 import system.Multiplier
 import java.io.File
 
-internal class FileInfoImpl(override val file: LocalFileImpl) : FileInfo {
+class FileInfoImpl(override val file: LocalFileImpl) : FileInfo {
     private val separator = if (file.path.contains("\\")) "\\" else "/"
     override fun name(extension: Boolean): String {
         val full = file.path.substringAfterLast(separator)

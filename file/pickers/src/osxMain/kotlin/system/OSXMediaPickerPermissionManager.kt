@@ -11,16 +11,12 @@ import system.file.mime.Mime
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class OSXImagePickerPermissionManager : PickerPermissionsManager {
+class OSXMediaPickerPermissionManager : PickerPermissionsManager {
     override fun check(mimes: List<Mime>): Permission = PHPhotoLibrary.authorizationStatus().toPermission()
 
-    override suspend fun request(mimes: List<Mime>): Permission {
-        val permission = check(mimes)
-        if (permission != Permission.Unauthorized) return permission
-        return suspendCoroutine { cont ->
-            PHPhotoLibrary.requestAuthorization { status ->
-                cont.resume(status.toPermission())
-            }
+    override suspend fun request(mimes: List<Mime>): Permission = suspendCoroutine { cont ->
+        PHPhotoLibrary.requestAuthorization { status ->
+            cont.resume(status.toPermission())
         }
     }
 
