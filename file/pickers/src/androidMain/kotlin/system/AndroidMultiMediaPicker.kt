@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import kollections.addAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -13,8 +12,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import system.file.MultiMediaPicker
 import system.file.PickerLimit
-import system.file.PickingException
-import system.file.fits
 import system.file.mime.Image
 import system.file.mime.MediaMime
 import system.file.mime.Mime
@@ -51,15 +48,8 @@ class AndroidMultiMediaPicker(private val activity: ComponentActivity) : MultiMe
             .build()
         l.launch(request)
         val files = results.receive().map { LocalFile(it) }
-        val errors = buildList {
-            if (files.size > limit.count) {
-                add(PickingException.CountLimitExceeded(files.size, limit.count))
-            }
-            for (file in files.map { FileInfo(activity, it) }) {
-                addAll(file.fits(mimes, limit.size))
-            }
-        }
-        return files.toResponse(errors)
+        val infos = files.map { FileInfo(activity, it) }
+        return files.toResponse(mimes, limit, infos)
     }
 
     override suspend fun open(

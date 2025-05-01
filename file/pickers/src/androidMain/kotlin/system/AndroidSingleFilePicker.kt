@@ -9,18 +9,18 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import system.file.PickerLimit
 import system.file.SingleFilePicker
-import system.file.fits
 import system.file.mime.Image
 import system.file.mime.Mime
 import system.file.mime.Video
 import system.file.picker.response.Cancelled
 import system.file.picker.response.Denied
-import system.file.picker.response.Failure
-import system.file.picker.response.FilePicked
 import system.file.picker.response.SinglePickerResponse
-import system.internal.FileInfo
-import system.internal.LocalFile
+import system.file.picker.response.toSingle
+import system.file.toResponse
+import system.internal.FileInfoUri
+import system.internal.LocalFileUri
 
 class AndroidSingleFilePicker(private val activity: ComponentActivity) : SingleFilePicker {
     private var scope: CoroutineScope? = null
@@ -43,10 +43,9 @@ class AndroidSingleFilePicker(private val activity: ComponentActivity) : SingleF
     ): SinglePickerResponse {
         val l = launcher ?: throw IllegalStateException("AndroidFileChooser has not been registered")
         l.launch(mimes.map { it.text }.toTypedArray())
-        val resp = results.receive()?.let { LocalFile(it) } ?: return Cancelled
-        val errors = FileInfo(activity, resp).fits(mimes, limit)
-        if (errors.isEmpty()) return FilePicked(resp)
-        return Failure(errors)
+        val files = listOf(results.receive()?.let { LocalFileUri(it) } ?: return Cancelled)
+        val infos = files.map { FileInfoUri(activity, it) }
+        return files.toResponse(mimes, PickerLimit(limit, 1), infos).toSingle()
     }
 
     override suspend fun open(

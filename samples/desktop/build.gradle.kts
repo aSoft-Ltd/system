@@ -43,37 +43,37 @@ compose.desktop {
             joinOutputJars = true
         }
 
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Deb, TargetFormat.Exe, TargetFormat.Msi)
-            packageName = "System"
-            vendor = "aSoft"
-            linux {
-                iconFile = file("src/commonMain/resources/logo/monogram_blue_gradient.svg")
-                shortcut = true
-            }
-
-            macOS {
-                bundleID = "tz.co.asoft.academia"
-                iconFile = file("src/commonMain/resources/logo/monogram_blue_gradient.icns")
-
-                signing {
-                    sign.set(true)
-                    identity.set("Msangya Anderson")
-                    // keychain.set("/path/to/keychain")
-                }
-
-                notarization {
-                    val path = gradleLocalProperties(rootDir)
-                    appleID.set(path.getProperty("NOTARIZATION_APPLE_ID"))
-                    password.set(path.getProperty("NOTARIZATION_PASSWORD"))
-                    teamID.set(path.getProperty("NOTARIZATION_TEAM_ID"))
-                }
-            }
-
-            windows {
-                iconFile = file("src/commonMain/resources/logo/monogram_blue_gradient.svg")
-                shortcut = true
-            }
-        }
+//        nativeDistributions {
+//            targetFormats(TargetFormat.Dmg, TargetFormat.Deb, TargetFormat.Exe, TargetFormat.Msi)
+//            packageName = "System"
+//            vendor = "aSoft"
+//            linux {
+//                iconFile = file("src/commonMain/resources/logo/monogram_blue_gradient.svg")
+//                shortcut = true
+//            }
+//
+//            macOS {
+//                bundleID = "tz.co.asoft.academia"
+//                iconFile = file("src/commonMain/resources/logo/monogram_blue_gradient.icns")
+//
+//                signing {
+//                    sign.set(true)
+//                    identity.set("Msangya Anderson")
+//                    // keychain.set("/path/to/keychain")
+//                }
+//
+//                notarization {
+//                    val path = gradleLocalProperties(rootDir)
+//                    appleID.set(path.getProperty("NOTARIZATION_APPLE_ID"))
+//                    password.set(path.getProperty("NOTARIZATION_PASSWORD"))
+//                    teamID.set(path.getProperty("NOTARIZATION_TEAM_ID"))
+//                }
+//            }
+//
+//            windows {
+//                iconFile = file("src/commonMain/resources/logo/monogram_blue_gradient.svg")
+//                shortcut = true
+//            }
+//        }
     }
 }

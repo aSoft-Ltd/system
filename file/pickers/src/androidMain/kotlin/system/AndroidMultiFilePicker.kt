@@ -11,8 +11,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import system.file.MultiFilePicker
 import system.file.PickerLimit
-import system.file.PickingException
-import system.file.fits
 import system.file.mime.Image
 import system.file.mime.Mime
 import system.file.mime.Video
@@ -44,15 +42,8 @@ class AndroidMultiFilePicker(private val activity: ComponentActivity) : MultiFil
         val l = launcher ?: throw IllegalStateException("AndroidFileChooser has not been registered")
         l.launch(mimes.map { it.text }.toTypedArray())
         val files = results.receive().map { LocalFile(it) }
-        val errors = buildList {
-            if (files.size > limit.count) {
-                add(PickingException.CountLimitExceeded(files.size, limit.count))
-            }
-            for (file in files.map { FileInfo(activity, it) }) {
-                addAll(file.fits(mimes, limit.size))
-            }
-        }
-        return files.toResponse(errors)
+        val info = files.map { FileInfo(activity, it) }
+        return files.toResponse(mimes, limit, info)
     }
 
     override suspend fun open(
