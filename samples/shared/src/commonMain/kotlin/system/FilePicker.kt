@@ -35,34 +35,36 @@ internal fun FilesPicker(
         val picked = remember { mutableStateListOf<LocalFile>() }
         val denied = remember { mutableStateOf(false) }
         val errors = remember { mutableStateListOf<PickingException>() }
-        Button(
-            onClick = {
-                scope.launch {
-                    when (val response = files.pickers.documents.open(limit = PickerLimit(size = 10.MB, count = 2))) {
-                        is Cancelled -> {}
-                        is Denied -> denied.value = true
-                        is Failure -> errors += response
-                        is FilesPicked -> picked += response
+        Row {
+            Button(
+                onClick = {
+                    scope.launch {
+                        when (val response = files.pickers.documents.open(limit = PickerLimit(size = 10.MB, count = 2))) {
+                            is Cancelled -> {}
+                            is Denied -> denied.value = true
+                            is Failure -> errors += response
+                            is FilesPicked -> picked += response
+                        }
                     }
                 }
+            ) {
+                Text("Pick Files")
             }
-        ) {
-            Text("Pick Files")
-        }
 
-        Button(
-            onClick = {
-                scope.launch {
-                    when (val response = files.pickers.document.open()) {
-                        is Cancelled -> {}
-                        is Denied -> denied.value = true
-                        is Failure -> errors += response.errors
-                        is FilePicked -> picked += response.file
+            Button(
+                onClick = {
+                    scope.launch {
+                        when (val response = files.pickers.document.open()) {
+                            is Cancelled -> {}
+                            is Denied -> denied.value = true
+                            is Failure -> errors += response.errors
+                            is FilePicked -> picked += response.file
+                        }
                     }
                 }
+            ) {
+                Text("Pick File")
             }
-        ) {
-            Text("Pick File")
         }
 
         Column {

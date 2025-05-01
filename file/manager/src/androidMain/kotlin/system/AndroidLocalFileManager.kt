@@ -1,17 +1,19 @@
 package system
 
 import androidx.activity.ComponentActivity
-import koncurrent.Executor
-import koncurrent.Later
-import koncurrent.TODOLater
 import system.file.FilePickers
+import system.file.mime.Mime
+import system.internal.AndroidFileReader
+import system.internal.AndroidFileSaver
 import system.internal.FileInfo
 import system.internal.LocalFilePath
 import system.internal.LocalFileUri
-import java.io.ByteArrayOutputStream
 import java.io.File
 
-class AndroidLocalFileManager(private val activity: ComponentActivity) : LocalFileManager {
+class AndroidLocalFileManager(private val activity: ComponentActivity) :
+    LocalFileManager,
+    FileSaver,
+    FileReader by AndroidFileReader(activity) {
     override val pickers by lazy {
         FilePickers(
             documents = AndroidMultiFilePicker(activity),
@@ -21,54 +23,43 @@ class AndroidLocalFileManager(private val activity: ComponentActivity) : LocalFi
         )
     }
 
+    private val saver by lazy { AndroidFileSaver(activity) }
+
     fun register() {
         pickers.documents.register()
         pickers.document.register()
         pickers.medias.register()
         pickers.media.register()
+        saver.register()
     }
 
-    override fun exists(file: LocalFile): Boolean {
-        file as LocalFilePath
-        return File(file.path).exists()
+    override fun exists(file: LocalFile): Boolean = when (file) {
+        is LocalFilePath -> File(file.path).exists()
+        is LocalFileUri -> when (file.uri.scheme) {
+            "content" -> {
+                val cursor = activity.contentResolver.query(file.uri, null, null, null, null)
+                val res = cursor != null
+                cursor?.close()
+                res
+            }
+
+            "file" -> File(file.uri.path ?: "").exists()
+            else -> false
+        }
+
+        else -> false
     }
 
     override fun info(file: LocalFile): FileInfo = FileInfo(activity, file)
 
-    override fun open(file: LocalFile): Later<String> = TODOLater()
-
-    override fun open(url: String): Later<String> = TODOLater()
-
-    override fun save(file: LocalFile, name: String?): Later<String> = TODOLater()
-
-    override fun read(file: LocalFile, executor: Executor): Later<ByteArray> = Later { resolve, reject ->
-        try {
-            when (file) {
-                is LocalFilePath -> resolve(File(file.path).readBytes())
-                is LocalFileUri -> {
-                    val contentResolver = activity.contentResolver
-                    val fis = contentResolver.openInputStream(file.uri) ?: return@Later reject(
-                        IllegalArgumentException("Failed to open file: ${file.uri} for reading")
-                    )
-                    val baos = ByteArrayOutputStream()
-                    fis.copyTo(baos)
-                    fis.close()
-                    baos.close()
-                    resolve(baos.toByteArray())
-                }
-
-                else -> reject(IllegalArgumentException("LocalFile of type `${file::class.simpleName}` is not supported on Android"))
-            }
-            resolve(File((file as LocalFilePath).path).readBytes())
-        } catch (err: Throwable) {
-            reject(err)
-        }
-    }
+    override suspend fun save(content: ByteArray, name: String, type: Mime) = saver.save(content, name, type)
+    override suspend fun save(content: String, name: String, type: Mime) = saver.save(content, name, type)
 
     fun unregister() {
         pickers.documents.unregister()
         pickers.document.unregister()
         pickers.medias.unregister()
         pickers.media.unregister()
+        saver.unregister()
     }
 }

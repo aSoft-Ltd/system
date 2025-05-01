@@ -10,6 +10,7 @@ fun Sample(
     Column {
         FilesPicker(files)
         ImagePicker(files)
-        Saver(files)
+        FileReader(files)
+        FileSaver(files)
     }
 }

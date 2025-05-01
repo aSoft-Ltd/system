@@ -7,7 +7,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun Saver(files: FileSaver) {
+internal fun FileSaver(files: FileSaver) {
     val scope = rememberCoroutineScope()
     Button(
         onClick = {
