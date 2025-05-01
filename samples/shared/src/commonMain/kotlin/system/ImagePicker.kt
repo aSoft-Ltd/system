@@ -1,22 +1,15 @@
 package system
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.window.Dialog
-import koncurrent.later.catch
-import koncurrent.later.then
 import kotlinx.coroutines.launch
 import system.file.PickerLimit
 import system.file.PickingException
@@ -29,7 +22,7 @@ import system.file.picker.response.FilesPicked
 
 @Composable
 internal fun ImagePicker(
-    files: FileManager
+    files: LocalFileManager
 ) {
     val scope = rememberCoroutineScope()
     Column {
@@ -91,30 +84,5 @@ internal fun ImagePicker(
                 Text("Permission denied")
             }
         }
-    }
-}
-
-@Composable
-internal fun PickedImage(
-    files: FileManager,
-    file: LocalFile
-) {
-    var image by remember { mutableStateOf<ImageBitmap?>(null) }
-    val info = remember { files.info(file) }
-    val name = info.name()
-    println("Showing $name")
-    LaunchedEffect(file) {
-        println("Reading $name")
-        files.read(file).then {
-            println("Read $name")
-            image = it.toImageBitmap()
-            println("Assigned $image to $name")
-        }.catch {
-            println("Failed to read $name: $it")
-        }
-    }
-    when (val i = image) {
-        null -> Text("Loading $name...")
-        else -> Image(i, contentDescription = info.name())
     }
 }

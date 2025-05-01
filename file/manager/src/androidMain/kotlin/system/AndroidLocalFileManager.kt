@@ -11,7 +11,7 @@ import system.internal.LocalFileUri
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-class AndroidFileManager(private val activity: ComponentActivity) : FileManager {
+class AndroidLocalFileManager(private val activity: ComponentActivity) : LocalFileManager {
     override val pickers by lazy {
         FilePickers(
             documents = AndroidMultiFilePicker(activity),

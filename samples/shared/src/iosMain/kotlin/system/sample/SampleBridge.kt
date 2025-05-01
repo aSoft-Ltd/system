@@ -2,12 +2,12 @@ package system.sample
 
 import androidx.compose.ui.window.ComposeUIViewController
 import platform.UIKit.UIViewController
-import system.IosFileManager
+import system.IosLocalFileManager
 import system.Sample
 
 class SampleBridge {
     private var controller: UIViewController? = null
-    val files = IosFileManager()
+    val files = IosLocalFileManager()
 
     fun make(): UIViewController = ComposeUIViewController {
         Sample(files = files)

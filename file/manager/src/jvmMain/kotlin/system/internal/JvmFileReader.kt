@@ -1,18 +1,19 @@
 package system.internal
 
-import koncurrent.Executor
-import koncurrent.Later
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import system.FileReader
 import system.LocalFile
 import java.io.File
 
 internal class JvmFileReader : FileReader {
-    override fun read(file: LocalFile, executor: Executor): Later<ByteArray> = Later(executor) { resolve, reject ->
-        try {
-            file as LocalFileImpl
-            resolve(File(file.path).readBytes())
-        } catch (err: Throwable) {
-            reject(err)
-        }
+    override suspend fun readBytes(file: LocalFile): ByteArray = withContext(Dispatchers.IO) {
+        file as LocalFileImpl
+        File(file.path).readBytes()
+    }
+
+    override suspend fun readText(file: LocalFile): String = withContext(Dispatchers.IO) {
+        file as LocalFileImpl
+        File(file.path).readText()
     }
 }

@@ -5,10 +5,11 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun Sample(
-    files: FileManager
+    files: LocalFileManager
 ) {
     Column {
         FilesPicker(files)
         ImagePicker(files)
+        Saver(files)
     }
 }

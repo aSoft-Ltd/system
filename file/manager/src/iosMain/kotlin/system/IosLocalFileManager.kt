@@ -14,7 +14,7 @@ import system.internal.LocalFileInfoProvider
 import system.internal.LocalFileProvider
 import system.internal.LocalFileUrl
 
-class IosFileManager : FileManager {
+class IosLocalFileManager : LocalFileManager {
 
     override val pickers by lazy {
         FilePickers(
@@ -57,7 +57,7 @@ class IosFileManager : FileManager {
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    override fun read(file: LocalFile, executor: Executor): Later<ByteArray> = Later { resolve, reject ->
+    override fun readBytes(file: LocalFile, executor: Executor): Later<ByteArray> = Later { resolve, reject ->
         file as LocalFileProvider
         val identifier = file.provider.registeredTypeIdentifiers.firstOrNull() ?: return@Later reject(RuntimeException("No identifier found"))
         val type = UTType.typeWithIdentifier(identifier as String) ?: return@Later reject(RuntimeException("No type found"))

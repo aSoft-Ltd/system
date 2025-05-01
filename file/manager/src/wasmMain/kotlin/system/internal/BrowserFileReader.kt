@@ -11,7 +11,7 @@ internal class BrowserFileReader : MppFileReader {
 
     val reader: FileReader = FileReader()
 
-    override fun read(file: LocalFile, executor: Executor): Later<ByteArray> {
+    override fun readBytes(file: LocalFile, executor: Executor): Later<ByteArray> {
         file as LocalFileImpl
         return reader.readBytesOf(
             blob = file.wrapped,

@@ -2,12 +2,14 @@ package system
 
 import kotlinx.coroutines.suspendCancellableCoroutine
 import system.file.PickerLimit
+import system.file.mime.All
 import system.file.mime.Mime
+import system.file.picker.response.Cancelled
 import system.file.picker.response.MultiPickerResponse
 import system.file.toResponse
 import system.internal.FileInfoImpl
 import system.internal.LocalFileImpl
-import system.internal.toFileFilter
+import system.internal.MimeFileFilter
 import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
 import kotlin.coroutines.resume
@@ -17,10 +19,14 @@ abstract class AbstractFilePicker {
         mimes: List<Mime>,
         limit: PickerLimit
     ): MultiPickerResponse {
+        if (mimes.isEmpty()) return show(listOf(All), limit)
+        if (limit.count <= 0) return Cancelled
+        if (limit.size <= MemorySize.Zero) return Cancelled
+
         val chooser = JFileChooser().apply {
             fileSelectionMode = JFileChooser.FILES_ONLY
             isMultiSelectionEnabled = limit.count > 1
-            fileFilter = mimes.toFileFilter(limit.size)
+            fileFilter = MimeFileFilter(mimes, limit.size)
             name = "Select File" + if (limit.count > 1) "s" else ""
         }
 

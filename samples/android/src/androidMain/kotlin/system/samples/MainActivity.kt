@@ -4,14 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
-import androidx.lifecycle.lifecycleScope
-import system.AndroidFileManager
+import system.AndroidLocalFileManager
 import system.Sample
 
 
 class MainActivity : ComponentActivity() {
 
-    private val files by lazy { AndroidFileManager(this) }
+    private val files by lazy { AndroidLocalFileManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

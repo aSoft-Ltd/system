@@ -59,10 +59,9 @@ abstract class OSXMediaPicker {
     }
 
     private fun List<Mime>.toFilter(): PHPickerFilter {
-        if (isEmpty() || contains(All)) {
-            return PHPickerFilter.anyFilterMatchingSubfilters(Image.toFilters() + Video.toFilters())
-        }
-        val filters = buildSet {
+        val filters = if (isEmpty() || contains(All)) {
+            Image.toFilters() + Video.toFilters()
+        } else buildSet {
             for (m in this@toFilter) {
                 addAll(m.toFilters())
             }

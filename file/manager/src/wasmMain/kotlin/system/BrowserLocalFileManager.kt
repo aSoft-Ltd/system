@@ -8,7 +8,7 @@ import system.file.FilePickers
 import system.internal.BrowserFileInfo
 import system.internal.LocalFileImpl
 
-class BrowserFileManager : FileManager {
+class BrowserLocalFileManager : LocalFileManager {
     override val pickers by lazy {
         FilePickers(
             documents = BrowserMultiFilePicker(),
@@ -28,7 +28,7 @@ class BrowserFileManager : FileManager {
 
     override fun save(file: LocalFile, name: String?): Later<String> = TODOLater()
 
-    override fun read(file: LocalFile, executor: Executor): Later<ByteArray> {
+    override fun readBytes(file: LocalFile, executor: Executor): Later<ByteArray> {
         val reader = FileReader()
         file as LocalFileImpl
         return reader.readBytesOf(

@@ -17,11 +17,10 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultFilterQuality
 import androidx.compose.ui.layout.ContentScale
-import koncurrent.later.then
 
 @Composable
 fun Image(
-    manager: FileManager,
+    manager: LocalFileManager,
     file: LocalFile,
     loader: @Composable BoxScope.() -> Unit = {},
     modifier: Modifier = Modifier,
@@ -34,9 +33,7 @@ fun Image(
 ) {
     var bitmap by remember(file) { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(file) {
-        manager.read(file).then {
-            bitmap = it.toImageBitmap()
-        }
+        bitmap = manager.readBytes(file).toImageBitmap()
     }
     when (val b = bitmap) {
         null -> Box(modifier, content = loader)

@@ -1,6 +1,7 @@
 package system
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -17,6 +18,7 @@ import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import system.file.PickerLimit
 import system.file.PickingException
+import system.file.mime.Mime
 import system.file.picker.response.Cancelled
 import system.file.picker.response.Denied
 import system.file.picker.response.Failure
@@ -26,7 +28,7 @@ import kotlin.math.round
 
 @Composable
 internal fun FilesPicker(
-    files: FileManager
+    files: LocalFileManager
 ) {
     val scope = rememberCoroutineScope()
     Column {
@@ -51,7 +53,7 @@ internal fun FilesPicker(
         Button(
             onClick = {
                 scope.launch {
-                    when (val response = files.pickers.document.open(limit = 10.KB)) {
+                    when (val response = files.pickers.document.open()) {
                         is Cancelled -> {}
                         is Denied -> denied.value = true
                         is Failure -> errors += response.errors
@@ -64,7 +66,7 @@ internal fun FilesPicker(
         }
 
         Column {
-            for (file in picked) PickedFile(files.info(file))
+            for (file in picked) PickedFile(files,files.info(file))
         }
 
         if (errors.isNotEmpty()) Dialog(
@@ -93,15 +95,28 @@ internal fun FilesPicker(
 
 @Composable
 internal fun PickedFile(
+    files: LocalFileManager,
     file: FileInfo
 ) {
     var size by remember { mutableStateOf(MemorySize.Zero) }
 
+    val scope = rememberCoroutineScope()
     LaunchedEffect(file) {
         val s = file.size().toBestSize()
         size = s.copy(value = round(s.value * 10) / 10)
     }
-    Text(
-        "File: ${file.name()}, Size: $size"
-    )
+    Row {
+        Text(
+            "File: ${file.name()}, Size: $size"
+        )
+        Button(onClick = {
+            scope.launch {
+                files.save(
+                    content = files.readBytes(file.file),
+                    name = file.name(),
+                    type = Mime.from(extension = file.extension())
+                )
+            }
+        }) { Text("Save") }
+    }
 }

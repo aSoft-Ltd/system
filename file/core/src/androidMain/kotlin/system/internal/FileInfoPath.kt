@@ -7,9 +7,9 @@ import system.Multiplier
 import java.io.File
 
 class FileInfoPath(override val file: LocalFilePath) : FileInfo {
-    private val separator = if (file.path.contains("\\")) "\\" else "/"
+
     override fun name(extension: Boolean): String {
-        val full = file.path.substringAfterLast(separator)
+        val full = file.path.substringAfterLast("/")
         if (extension) return full
         val ext = extension()
         if (ext == "") return full

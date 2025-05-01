@@ -30,4 +30,9 @@ interface Application : Mime {
         override val name: String get() = "GZIP"
         override val text: String get() = "application/gzip"
     }
+
+    data object OctetStream : Application {
+        override val name: String get() = "OctetStream"
+        override val text: String = "application/octet-stream"
+    }
 }

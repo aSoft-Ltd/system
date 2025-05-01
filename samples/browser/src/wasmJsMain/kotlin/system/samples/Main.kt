@@ -7,7 +7,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import org.jetbrains.compose.resources.configureWebResources
-import system.BrowserFileManager
+import system.BrowserLocalFileManager
 import system.Sample
 
 @ExperimentalComposeUiApi
@@ -19,7 +19,7 @@ fun main() {
 
     CanvasBasedWindow(canvasElementId = "app") {
         MaterialTheme {
-            Sample(files = BrowserFileManager())
+            Sample(files = BrowserLocalFileManager())
         }
     }
 }
