@@ -13,9 +13,9 @@ import system.file.PickerLimit
 import system.file.SingleFilePicker
 import system.file.mime.All
 import system.file.mime.Mime
-import system.file.picker.response.Cancelled
-import system.file.picker.response.SinglePickerResponse
-import system.file.picker.response.toSingle
+import system.file.response.Cancelled
+import system.file.response.SingleFileResponse
+import system.file.response.toSingle
 import system.file.toResponse
 import system.internal.FileInfoUri
 import system.internal.LocalFileUri
@@ -36,7 +36,7 @@ class AndroidSingleFilePicker(private val activity: ComponentActivity) : SingleF
     override suspend fun open(
         mimes: List<Mime>,
         limit: MemorySize,
-    ): SinglePickerResponse {
+    ): SingleFileResponse {
         if (mimes.isEmpty()) return open(listOf(All), limit)
         val l = launcher ?: throw IllegalStateException("AndroidFileChooser has not been registered")
         l.launch(mimes.map { it.text }.toTypedArray())

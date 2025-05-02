@@ -18,13 +18,13 @@ import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import system.file.PickerLimit
-import system.file.PickingException
 import system.file.mime.Mime
-import system.file.picker.response.Cancelled
-import system.file.picker.response.Denied
-import system.file.picker.response.Failure
-import system.file.picker.response.FilePicked
-import system.file.picker.response.FilesPicked
+import system.file.response.Cancelled
+import system.file.response.Denied
+import system.file.response.Failure
+import system.file.response.FileReturned
+import system.file.response.FilesReturned
+import system.file.response.ResponseError
 import kotlin.math.round
 
 @Composable
@@ -35,7 +35,7 @@ internal fun FilesPicker(
     Column {
         val picked = remember { mutableStateListOf<LocalFile>() }
         val denied = remember { mutableStateOf(false) }
-        val errors = remember { mutableStateListOf<PickingException>() }
+        val errors = remember { mutableStateListOf<ResponseError>() }
         Row {
             Button(
                 onClick = {
@@ -44,7 +44,7 @@ internal fun FilesPicker(
                             is Cancelled -> {}
                             is Denied -> denied.value = true
                             is Failure -> errors += response
-                            is FilesPicked -> picked += response
+                            is FilesReturned -> picked += response
                         }
                     }
                 }
@@ -59,7 +59,7 @@ internal fun FilesPicker(
                             is Cancelled -> {}
                             is Denied -> denied.value = true
                             is Failure -> errors += response.errors
-                            is FilePicked -> picked += response.file
+                            is FileReturned -> picked += response.file
                         }
                     }
                 }
@@ -123,14 +123,18 @@ internal fun PickedFile(
                         type = Mime.from(extension = file.extension())
                     )
                     message = when (result) {
-                        is SaveResult.Success -> "File saved successfully"
-                        is SaveResult.Failure -> "Failed to save file: ${result.errors.joinToString(", ") { it.message ?: "" }}"
+                        is FileReturned -> "File saved successfully"
+                        is Failure -> "Failed to save file: ${result.errors.joinToString(", ") { it.message ?: "" }}"
                         else -> "File save cancelled"
                     }
                     delay(3000)
                     message = null
                 }
             }) { Text("Save") }
+
+            Button(onClick = {
+                scope.launch { files.open(file.file) }
+            }) { Text("Open") }
         }
         Text(message ?: "")
     }

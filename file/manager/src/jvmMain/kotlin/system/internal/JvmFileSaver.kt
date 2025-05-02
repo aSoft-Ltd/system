@@ -4,8 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import system.FileSaver
-import system.SaveResult
 import system.file.mime.Mime
+import system.file.response.Cancelled
+import system.file.response.FileReturned
+import system.file.response.SingleFileResponse
 import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
@@ -32,16 +34,12 @@ internal class JvmFileSaver : FileSaver {
         }
     }
 
-    private suspend fun file(name: String, block: File.() -> Unit): SaveResult {
-        val directory = directory() ?: return SaveResult.Cancelled
-        return try {
-            withContext(Dispatchers.IO) {
-                val file = File(directory, name).apply { createNewFile() }
-                block(file)
-                SaveResult.Success
-            }
-        } catch (err: Throwable) {
-            SaveResult.Failure(listOf(err))
+    private suspend fun file(name: String, block: File.() -> Unit): SingleFileResponse {
+        val directory = directory() ?: return Cancelled
+        return withContext(Dispatchers.IO) {
+            val file = File(directory, name).apply { createNewFile() }
+            block(file)
+            FileReturned(LocalFileImpl(file.path))
         }
     }
 

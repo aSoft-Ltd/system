@@ -1,6 +1,6 @@
 package system
 
-import koncurrent.Later
+import system.file.response.SingleFileResponse
 
 /**
  * Can ask the system to open a particular file
@@ -9,10 +9,10 @@ import koncurrent.Later
  * In the native platform, this will open the file with the default application
  */
 interface FileOpener {
-    fun open(file: LocalFile): Later<String>
+    suspend fun open(file: LocalFile): SingleFileResponse
 
     /**
      * Open a file with the given [url]
      */
-    fun open(url: String): Later<String>
+    suspend fun open(url: String): SingleFileResponse
 }

@@ -4,17 +4,18 @@ import system.FileInfo
 import system.LocalFile
 import system.MemorySize
 import system.file.mime.Mime
-import system.file.picker.response.Cancelled
-import system.file.picker.response.Failure
-import system.file.picker.response.FilesPicked
-import system.file.picker.response.MultiPickerResponse
+import system.file.response.Cancelled
+import system.file.response.Failure
+import system.file.response.FilesReturned
+import system.file.response.MultiPickerResponse
+import system.file.response.ResponseError
 
-private suspend fun FileInfo.fits(mimes: List<Mime>, limit: MemorySize): List<PickingException> = buildList {
+private suspend fun FileInfo.fits(mimes: List<Mime>, limit: MemorySize): List<ResponseError> = buildList {
     val mime = Mime.from(extension())
     val name = name()
-    if (mimes.none { it.matches(mime) }) add(PickingException.InvalidMimeType(name, mime, mimes))
+    if (mimes.none { it.matches(mime) }) add(ResponseError.InvalidMimeType(name, mime, mimes))
     val size = size()
-    if (size > limit) add(PickingException.SizeLimitExceeded(name, size, limit))
+    if (size > limit) add(ResponseError.SizeLimitExceeded(name, size, limit))
 }
 
 internal suspend fun List<LocalFile>.toResponse(
@@ -25,12 +26,12 @@ internal suspend fun List<LocalFile>.toResponse(
     if (isEmpty()) return Cancelled
     val errors = buildList {
         if (size > limit.count) {
-            add(PickingException.CountLimitExceeded(size, limit.count))
+            add(ResponseError.CountLimitExceeded(size, limit.count))
         }
         for (file in infos) {
             addAll(file.fits(mimes, limit.size))
         }
     }
     if (errors.isNotEmpty()) return Failure(errors)
-    return FilesPicked(this)
+    return FilesReturned(this)
 }

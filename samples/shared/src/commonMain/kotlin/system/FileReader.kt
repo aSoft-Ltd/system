@@ -11,10 +11,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
-import system.file.picker.response.Cancelled
-import system.file.picker.response.Denied
-import system.file.picker.response.Failure
-import system.file.picker.response.FilePicked
+import system.file.response.Cancelled
+import system.file.response.Denied
+import system.file.response.Failure
+import system.file.response.FileReturned
 
 @Composable
 internal fun FileReader(files: LocalFileManager) {
@@ -29,7 +29,7 @@ internal fun FileReader(files: LocalFileManager) {
                             is Cancelled -> {}
                             is Denied -> {}
                             is Failure -> {}
-                            is FilePicked -> {
+                            is FileReturned -> {
                                 text = files.readText(file.file)
                             }
                         }

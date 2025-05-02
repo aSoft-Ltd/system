@@ -13,7 +13,7 @@ import system.file.MultiFilePicker
 import system.file.PickerLimit
 import system.file.mime.All
 import system.file.mime.Mime
-import system.file.picker.response.MultiPickerResponse
+import system.file.response.MultiPickerResponse
 import system.file.toResponse
 import system.internal.FileInfo
 import system.internal.LocalFile

@@ -33,7 +33,7 @@ fun Image(
 ) {
     var bitmap by remember(file) { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(file) {
-        bitmap = manager.readBytes(file).toImageBitmap()
+        bitmap = manager.toImageBitmap(file)
     }
     when (val b = bitmap) {
         null -> Box(modifier, content = loader)

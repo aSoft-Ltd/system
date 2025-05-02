@@ -3,7 +3,7 @@ package system
 import system.file.PickerLimit
 import system.file.SingleFilePicker
 import system.file.mime.Mime
-import system.file.picker.response.toSingle
+import system.file.response.toSingle
 
 class JvmSingleFilePicker : AbstractFilePicker(), SingleFilePicker {
     override suspend fun open(

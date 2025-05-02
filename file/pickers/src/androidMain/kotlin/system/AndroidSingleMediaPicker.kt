@@ -16,10 +16,9 @@ import system.file.mime.Image
 import system.file.mime.MediaMime
 import system.file.mime.Mime
 import system.file.mime.Video
-import system.file.picker.response.Cancelled
-import system.file.picker.response.Denied
-import system.file.picker.response.SinglePickerResponse
-import system.file.picker.response.toSingle
+import system.file.response.Cancelled
+import system.file.response.SingleFileResponse
+import system.file.response.toSingle
 import system.file.toResponse
 import system.internal.FileInfo
 import system.internal.LocalFile
@@ -40,7 +39,7 @@ class AndroidSingleMediaPicker(private val activity: ComponentActivity) : Single
     private suspend fun show(
         mimes: List<Mime>,
         limit: MemorySize,
-    ): SinglePickerResponse {
+    ): SingleFileResponse {
         val l = launcher ?: throw IllegalStateException("AndroidFileChooser has not been registered")
         val request = PickVisualMediaRequest.Builder()
             .setMediaType(mimes.toMediaType())
@@ -54,7 +53,7 @@ class AndroidSingleMediaPicker(private val activity: ComponentActivity) : Single
     override suspend fun open(
         mimes: List<MediaMime>,
         limit: MemorySize,
-    ): SinglePickerResponse {
+    ): SingleFileResponse {
         if (mimes.isEmpty()) return open(listOf(Image, Video), limit)
         return show(mimes, limit)
     }

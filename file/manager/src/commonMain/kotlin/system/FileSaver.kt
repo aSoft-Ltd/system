@@ -1,26 +1,25 @@
 package system
 
-import kase.Success
 import system.file.mime.Application
 import system.file.mime.Mime
 import system.file.mime.Text
+import system.file.response.SingleFileResponse
 
 interface FileSaver {
     /**
      * Saves the file with [content] to the file system
      *
-     * @return [Success] when the file was successfully saved
-     * @return [Failure] when the file
+     * @return [SingleFileResponse] when the file was successfully saved
      */
     suspend fun save(
         content: ByteArray = byteArrayOf(),
         name: String = "file.bin",
         type: Mime = Application.OctetStream
-    ): SaveResult
+    ): SingleFileResponse
 
     suspend fun save(
         content: String = "",
         name: String = "file.txt",
         type: Mime = Text.Plain
-    ): SaveResult
+    ): SingleFileResponse
 }

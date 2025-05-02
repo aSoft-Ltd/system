@@ -15,7 +15,7 @@ import system.file.PickerLimit
 import system.file.mime.Image
 import system.file.mime.MediaMime
 import system.file.mime.Video
-import system.file.picker.response.MultiPickerResponse
+import system.file.response.MultiPickerResponse
 import system.file.toResponse
 import system.internal.FileInfo
 import system.internal.LocalFile

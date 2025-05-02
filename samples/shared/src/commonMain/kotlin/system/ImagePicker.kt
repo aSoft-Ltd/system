@@ -12,13 +12,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import system.file.PickerLimit
-import system.file.PickingException
+import system.file.response.ResponseError
 import system.file.mime.Image
-import system.file.picker.response.Cancelled
-import system.file.picker.response.Denied
-import system.file.picker.response.Failure
-import system.file.picker.response.FilePicked
-import system.file.picker.response.FilesPicked
+import system.file.response.Cancelled
+import system.file.response.Denied
+import system.file.response.Failure
+import system.file.response.FileReturned
+import system.file.response.FilesReturned
 
 @Composable
 internal fun ImagePicker(
@@ -28,7 +28,7 @@ internal fun ImagePicker(
     Column {
         val picked = remember { mutableStateListOf<LocalFile>() }
         val denied = remember { mutableStateOf(false) }
-        val errors = remember { mutableStateListOf<PickingException>() }
+        val errors = remember { mutableStateListOf<ResponseError>() }
         Row {
             Button(
                 onClick = {
@@ -37,7 +37,7 @@ internal fun ImagePicker(
                             is Cancelled -> {}
                             is Denied -> denied.value = true
                             is Failure -> errors += response.errors
-                            is FilePicked -> picked += response.file
+                            is FileReturned -> picked += response
                         }
                     }
                 }
@@ -52,7 +52,7 @@ internal fun ImagePicker(
                             is Cancelled -> {}
                             is Denied -> denied.value = true
                             is Failure -> errors += response
-                            is FilesPicked -> picked += response
+                            is FilesReturned -> picked += response
                         }
                     }
                 }

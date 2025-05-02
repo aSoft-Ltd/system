@@ -4,8 +4,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import system.file.PickerLimit
 import system.file.mime.All
 import system.file.mime.Mime
-import system.file.picker.response.Cancelled
-import system.file.picker.response.MultiPickerResponse
+import system.file.response.Cancelled
+import system.file.response.MultiPickerResponse
 import system.file.toResponse
 import system.internal.FileInfoImpl
 import system.internal.LocalFileImpl
@@ -39,7 +39,7 @@ abstract class AbstractFilePicker {
                 }
                 cont.resume(response)
             }
-        }.mapNotNull { it }.map { LocalFileImpl(it.path) }
+        }.mapNotNull { it.path }.toSet().map { LocalFileImpl(it) }
         val infos = files.map { FileInfoImpl(it) }
         return files.toResponse(mimes, limit, infos)
     }

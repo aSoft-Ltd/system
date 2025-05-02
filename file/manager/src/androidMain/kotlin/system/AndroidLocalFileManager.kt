@@ -10,7 +10,7 @@ import system.internal.LocalFilePath
 import system.internal.LocalFileUri
 import java.io.File
 
-class AndroidLocalFileManager(private val activity: ComponentActivity) :
+class AndroidLocalFileManager(val activity: ComponentActivity) :
     LocalFileManager,
     FileSaver,
     FileReader by AndroidFileReader(activity) {
