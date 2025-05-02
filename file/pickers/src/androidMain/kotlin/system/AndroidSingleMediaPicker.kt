@@ -26,7 +26,6 @@ import system.internal.LocalFile
 
 class AndroidSingleMediaPicker(private val activity: ComponentActivity) : SingleMediaPicker {
     private var scope: CoroutineScope? = null
-    private val permission by lazy { AndroidPickerPermissionManager(activity, scope) }
     private var launcher: ActivityResultLauncher<PickVisualMediaRequest>? = null
     private val results by lazy { Channel<Uri?>() }
 
@@ -36,7 +35,6 @@ class AndroidSingleMediaPicker(private val activity: ComponentActivity) : Single
         launcher = activity.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             scope?.launch { results.send(uri) }
         }
-        permission.register()
     }
 
     private suspend fun show(
@@ -58,17 +56,10 @@ class AndroidSingleMediaPicker(private val activity: ComponentActivity) : Single
         limit: MemorySize,
     ): SinglePickerResponse {
         if (mimes.isEmpty()) return open(listOf(Image, Video), limit)
-        return try {
-            if (permission.check(mimes) == Permission.Granted) return show(mimes, limit)
-            if (permission.request(mimes) == Permission.Granted) return show(mimes, limit)
-            Denied
-        } finally {
-            Denied
-        }
+        return show(mimes, limit)
     }
 
     fun unregister() {
-        permission.unregister()
         scope?.cancel()
         scope = null
     }

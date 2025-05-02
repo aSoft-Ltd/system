@@ -20,6 +20,7 @@ abstract class OSXFilePicker {
 
     private var host: UIViewController? = null
     private val results = Channel<List<NSURL>>()
+
     fun initialize(host: UIViewController) {
         this.host = host
     }

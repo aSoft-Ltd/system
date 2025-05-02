@@ -15,6 +15,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import system.file.PickerLimit
 import system.file.PickingException
@@ -68,7 +69,7 @@ internal fun FilesPicker(
         }
 
         Column {
-            for (file in picked) PickedFile(files,files.info(file))
+            for (file in picked) PickedFile(files, files.info(file))
         }
 
         if (errors.isNotEmpty()) Dialog(
@@ -101,24 +102,36 @@ internal fun PickedFile(
     file: FileInfo
 ) {
     var size by remember { mutableStateOf(MemorySize.Zero) }
+    var message by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
     LaunchedEffect(file) {
         val s = file.size().toBestSize()
         size = s.copy(value = round(s.value * 10) / 10)
     }
-    Row {
-        Text(
-            "File: ${file.name()}, Size: $size"
-        )
-        Button(onClick = {
-            scope.launch {
-                files.save(
-                    content = files.readBytes(file.file),
-                    name = file.name(),
-                    type = Mime.from(extension = file.extension())
-                )
-            }
-        }) { Text("Save") }
+    Column {
+        Row {
+            Text(
+                "File: ${file.name()}, Size: $size"
+            )
+            Button(onClick = {
+                scope.launch {
+                    message = "Saving file, please wait..."
+                    val result = files.save(
+                        content = files.readBytes(file.file),
+                        name = file.name(),
+                        type = Mime.from(extension = file.extension())
+                    )
+                    message = when (result) {
+                        is SaveResult.Success -> "File saved successfully"
+                        is SaveResult.Failure -> "Failed to save file: ${result.errors.joinToString(", ") { it.message ?: "" }}"
+                        else -> "File save cancelled"
+                    }
+                    delay(3000)
+                    message = null
+                }
+            }) { Text("Save") }
+        }
+        Text(message ?: "")
     }
 }

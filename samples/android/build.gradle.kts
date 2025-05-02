@@ -13,6 +13,7 @@ android {
 
     defaultConfig {
         minSdk = 25
+        targetSdk = androidx.versions.compile.sdk.get().toInt()
         applicationId = "system.samples"
         versionCode = 3
         versionName = "0.1"

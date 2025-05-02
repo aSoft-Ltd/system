@@ -1,21 +1,19 @@
 package system
 
-import koncurrent.Executor
-import koncurrent.Later
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.readBytes
 import platform.Foundation.NSFileManager
 import platform.UIKit.UIViewController
-import platform.UniformTypeIdentifiers.UTType
-import platform.UniformTypeIdentifiers.loadDataRepresentationForContentType
 import system.file.FilePickers
+import system.file.mime.Mime
 import system.internal.LocalFileInfoPath
 import system.internal.LocalFileInfoProvider
 import system.internal.LocalFileProvider
 import system.internal.LocalFileUrl
+import system.internal.OsxFileReader
+import system.internal.OsxFileSaver
 
-class IosLocalFileManager : LocalFileManager {
-
+class IosLocalFileManager :
+    LocalFileManager,
+    FileReader by OsxFileReader() {
     override val pickers by lazy {
         FilePickers(
             documents = OSXMultiFilePicker(),
@@ -25,11 +23,14 @@ class IosLocalFileManager : LocalFileManager {
         )
     }
 
+    private val saver by lazy { OsxFileSaver() }
+
     fun initialize(host: UIViewController) {
         pickers.documents.initialize(host)
         pickers.document.initialize(host)
         pickers.medias.initialize(host)
         pickers.media.initialize(host)
+        saver.initialize(host)
     }
 
     override fun exists(file: LocalFile): Boolean = when (file) {
@@ -44,30 +45,6 @@ class IosLocalFileManager : LocalFileManager {
         else -> throw IllegalArgumentException("Unsupported file type on IOS")
     }
 
-    override fun open(file: LocalFile): Later<String> {
-        TODO("Not yet implemented")
-    }
-
-    override fun open(url: String): Later<String> {
-        TODO("Not yet implemented")
-    }
-
-    override fun save(file: LocalFile, name: String?): Later<String> {
-        TODO("Not yet implemented")
-    }
-
-    @OptIn(ExperimentalForeignApi::class)
-    override fun readBytes(file: LocalFile, executor: Executor): Later<ByteArray> = Later { resolve, reject ->
-        file as LocalFileProvider
-        val identifier = file.provider.registeredTypeIdentifiers.firstOrNull() ?: return@Later reject(RuntimeException("No identifier found"))
-        val type = UTType.typeWithIdentifier(identifier as String) ?: return@Later reject(RuntimeException("No type found"))
-        file.provider.loadDataRepresentationForContentType(type) { data, error ->
-            if (error != null) {
-                reject(RuntimeException(error.localizedDescription))
-            } else {
-                val len = data?.length()?.toInt() ?: 0
-                resolve(data?.bytes()?.readBytes(len) ?: ByteArray(0))
-            }
-        }
-    }
+    override suspend fun save(content: ByteArray, name: String, type: Mime) = saver.save(content, name, type)
+    override suspend fun save(content: String, name: String, type: Mime) = saver.save(content, name, type)
 }
